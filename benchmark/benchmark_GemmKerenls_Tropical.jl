@@ -1,13 +1,13 @@
-using GemmKernels
+# notice: this code is used to benchmark the Tropical matmul in GemmKernels.jl, which is not yet released in the latest version and only supported in julia@v1.7
+# to run the code, you need to manually download the latest version repo of GemmKernels.jl and activate the enviroment
 
 import CUDA
 import InteractiveUtils
 
 using CUDA
-using ForwardDiff
 using GemmKernels
 using LinearAlgebra
-using Dates
+using BenchmarkTools
 using Test
 
 CUDA.allowscalar(false)
@@ -47,13 +47,9 @@ function try_tropical(M, N, K)
                                         is_b_col_major = !transpose_b,
                                         )
 
-        # this line is used to skip the compiling time
-        GemmKernels.matmul(a, b, c, d, conf; kernel = Kernel.matmul_pipelined)
-        n_iter = 10
-        elapsed_time = @elapsed @time CUDA.@sync begin 
-            for _ = 1:n_iter
-                GemmKernels.matmul(a, b, c, d, conf; kernel = Kernel.matmul_pipelined) 
-            end
+        n_iter = 1
+        elapsed_time = @belapsed CUDA.@sync begin 
+            GemmKernels.matmul($a, $b, $c, $d, $conf; kernel = Kernel.matmul_pipelined) 
         end
         TFlops = (n_iter * M * N * K * 2 / elapsed_time) / 1e9
         @show TFlops, elapsed_time, transpose_a, transpose_b, M, N, K

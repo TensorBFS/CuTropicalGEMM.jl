@@ -1,6 +1,7 @@
 using CuTropicalGEMM
 using Test
+using CUDA
 
 @testset "CuTropicalGEMM.jl" begin
-    # Write your tests here.
+    include("test_FP32_matmul.jl")
 end

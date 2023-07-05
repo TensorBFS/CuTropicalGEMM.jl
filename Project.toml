@@ -3,6 +3,12 @@ uuid = "c2b282c3-c9c2-431d-80f7-a1a0561ebe55"
 authors = ["Xuanzhao Gao <gaoxuanzhao@gmail.com> and contributors"]
 version = "1.0.0-DEV"
 
+[deps]
+ArtifactUtils = "8b73e784-e7d8-4ea5-973d-377fed4e3bce"
+Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
+
 [compat]
 julia = "1"
 

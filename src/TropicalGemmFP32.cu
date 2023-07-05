@@ -1,3 +1,7 @@
+// This CUDA code is modified based on github repo https://github.com/Yinghan-Li/YHs_Sample, which is under GPL 3.0 License
+// To build this code as .so lib, use command 
+// nvcc -Xcompiler -fPIC --shared TropicalGemmFP32.cu -o TropicalGemmFP32.so
+
 #include <cstdint>
 #include <cstdlib>
 #include <cstdio>
@@ -606,6 +610,7 @@ int main() {
 
     long workload = n_iter * long(m) * n * k * 2;
     double gflops = (double(workload) / 1e9) / (double(ms) / 1e3);
+    printf("M: %d, N: %d, K:  %d\n", M, N, K);
     printf("TropicalSGemm: %f GFLOPS\n", gflops);
     printf("time: %f ms\n", ms);
     cudaMemcpy(h_C, d_C, m * n * sizeof(float), cudaMemcpyDefault);
