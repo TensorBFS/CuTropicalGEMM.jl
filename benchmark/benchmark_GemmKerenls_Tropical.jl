@@ -2,7 +2,6 @@
 # to run the code, you need to manually download the latest version repo of GemmKernels.jl and activate the enviroment
 
 import CUDA
-import InteractiveUtils
 
 using CUDA
 using GemmKernels
