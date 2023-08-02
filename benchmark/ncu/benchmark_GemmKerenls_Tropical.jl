@@ -6,8 +6,6 @@ import CUDA
 using CUDA
 using GemmKernels
 using LinearAlgebra
-using BenchmarkTools
-using Test
 
 CUDA.allowscalar(false)
 
@@ -46,32 +44,7 @@ function try_tropical(M, N, K)
                                         is_b_col_major = !transpose_b,
                                         )
 
-        n_iter = 1
-        elapsed_time = @belapsed CUDA.@sync begin 
-            GemmKernels.matmul($a, $b, $c, $d, $conf; kernel = Kernel.matmul_pipelined) 
-        end
-        TFlops = (n_iter * M * N * K * 2 / elapsed_time) / 1e9
-        @show TFlops, elapsed_time, transpose_a, transpose_b, M, N, K
-
-
-        d_c = Array(d)
-
-        # random 1600 points took to test
-        if transpose_a == transpose_b == false
-            @testset begin 
-                for _ in 1 : 40
-                    for _ in 1 : 40
-                        i = rand(1:M)
-                        j = rand(1:N)
-                        d_h[i, j] = c_h[i, j]
-                        for k in 1 : K
-                            d_h[i, j] = max(a_h[i, k] + b_h[k, j], d_h[i, j]) 
-                        end
-                        @test isapprox(d_h[i, j], d_c[i, j]; rtol = sqrt(eps(A_type)))
-                    end
-                end
-            end
-        end
+        GemmKernels.matmul(a, b, c, d, conf; kernel = Kernel.matmul_pipelined) 
     end
     return nothing
 end

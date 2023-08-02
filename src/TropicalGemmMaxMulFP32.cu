@@ -15,29 +15,6 @@ void random_init(float *data, size_t size) {
 }
 
 
-bool check(const float *A,
-           const float *B,
-           const float *C,
-           int m, int n, int k) {
-    for (int i = 0; i < 20; ++i) {
-        int a = rand() % m;
-        for (int j = 0; j < 20; ++j) {
-            int b = rand() % n;
-            float sum = 0.f;
-            for (int p = 0; p < k; ++p) {
-                sum = max(sum, A[a * k + p] + B[b + p * n]);
-            }
-
-            if (std::fabs(sum - C[a * n + b]) / std::fabs(sum) > 1e-5f) {
-                printf("C[%d][%d] not match, %f vs %f\n", i, j, sum, C[a * n + b]);
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
-
 __device__ __forceinline__
 uint32_t smem_u32addr(const void *smem_ptr) {
     uint32_t addr;
@@ -231,7 +208,7 @@ void C_tile_wb(StgFrag C_frag,
  *
  */
 __global__ __launch_bounds__(256, 2)
-void sgemm_128x128x8_kernel(const float *A,
+void sgemm_128x128x8_kernel_maxmul(const float *A,
                             const float *B,
                             float *C,
                             uint32_t m,
@@ -437,7 +414,7 @@ void sgemm_128x128x8_kernel(const float *A,
             for (int i = 0; i < 8; ++i) {
                 #pragma unroll
                 for (int j = 0; j < 8; ++j) {
-                    C_frag[i][j] = max(C_frag[i][j], A_frag[k_frag % 2][i] + B_frag[k_frag % 2][j]);
+                    C_frag[i][j] = max(C_frag[i][j], A_frag[k_frag % 2][i] * B_frag[k_frag % 2][j]);
                 }
             }
         }
@@ -475,7 +452,7 @@ void sgemm_128x128x8_kernel(const float *A,
         for (int i = 0; i < 8; ++i) {
             #pragma unroll
             for (int j = 0; j < 8; ++j) {
-                C_frag[i][j] = max(C_frag[i][j], A_frag[k_frag % 2][i] + B_frag[k_frag % 2][j]);
+                C_frag[i][j] = max(C_frag[i][j], A_frag[k_frag % 2][i] * B_frag[k_frag % 2][j]);
             }
         }
     }
@@ -541,87 +518,9 @@ void sgemm_128x128x8_kernel(const float *A,
 }
 
 extern "C"
-void TropicalMatmul(int m, int n, int k, float *d_A, float *d_B, float *d_C){
+void TropicalGemmMaxMul(int m, int n, int k, float *d_A, float *d_B, float *d_C){
 
     dim3 grid((n + 127) / 128, (m + 127) / 128);
-    sgemm_128x128x8_kernel<<<grid, 256>>>(d_A, d_B, d_C, m, n, k, k * sizeof(float), n * sizeof(float) * 8);
+    sgemm_128x128x8_kernel_maxmul<<<grid, 256>>>(d_A, d_B, d_C, m, n, k, k * sizeof(float), n * sizeof(float) * 8);
 
-}
-
-extern "C"
-void MatrixPrint(int m, int k, float *A){
-    // float *cpu_A;
-    // cudaMallocHost(&cpu_A, m * k * sizeof(float));
-    // cudaMemcpy(A, cpu_A, m * k * sizeof(float), cudaMemcpyDefault);
-
-    for(int i = 0; i < m; ++i){
-        for(int j = 0; j < k; ++j){
-            // printf("%f\n", cpu_A[i * k + j]);
-            printf("%f\n", A[i * k + j]);
-        }
-    }
-
-    // cudaFreeHost(cpu_A);
-}
-
-int main() {
-    int m = 4 * 2560;
-    int n = 4 * 2000;
-    int k = 4 * 2048;
-    int n_iter = 10;
-
-    float *h_A, *h_B, *h_C;
-    cudaMallocHost(&h_A, m * k * sizeof(float));
-    cudaMallocHost(&h_B, k * n * sizeof(float));
-    cudaMallocHost(&h_C, m * n * sizeof(float));
-    random_init(h_A, m * k);
-    random_init(h_B, k * n);
-
-    float *d_A, *d_B, *d_C;
-    cudaMalloc(&d_A, m * k * sizeof(float));
-    cudaMalloc(&d_B, k * n * sizeof(float));
-    cudaMalloc(&d_C, m * n * sizeof(float));
-
-    cudaMemcpy(d_A, h_A, m * k * sizeof(float), cudaMemcpyDefault);
-    cudaMemcpy(d_B, h_B, k * n * sizeof(float), cudaMemcpyDefault);
-
-    cudaEvent_t start, end;
-    cudaEventCreate(&start);
-    cudaEventCreate(&end);
-
-    // dim3 grid((n + 127) / 128, (m + 127) / 128);
-
-    // warmup
-    // sgemm_128x128x8_kernel<<<grid, 256>>>(
-        // d_A, d_B, d_C, m, n, k, k * sizeof(float), n * sizeof(float) * 8);
-
-    cudaEventRecord(start);
-    for (int i = 0; i < n_iter; ++i) {
-        // sgemm_128x128x8_kernel<<<grid, 256>>>(d_A, d_B, d_C, m, n, k, k * sizeof(float), n * sizeof(float) * 8);
-        TropicalMatmul(m, n, k, d_A, d_B, d_C);
-    }
-    cudaEventRecord(end);
-    cudaEventSynchronize(end);
-
-    float ms;
-    cudaEventElapsedTime(&ms, start, end);
-    cudaEventDestroy(start);
-    cudaEventDestroy(end);
-
-    long workload = n_iter * long(m) * n * k * 2;
-    double gflops = (double(workload) / 1e9) / (double(ms) / 1e3);
-    printf("M: %d, N: %d, K:  %d\n", M, N, K);
-    printf("TropicalSGemm: %f GFLOPS\n", gflops);
-    printf("time: %f ms\n", ms);
-    cudaMemcpy(h_C, d_C, m * n * sizeof(float), cudaMemcpyDefault);
-
-    bool chk = check(h_A, h_B, h_C, m, n, k);
-    printf("Matrix_C check: %s\n", chk ? "OK" : "Failed");
-
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    cudaFreeHost(h_A);
-    cudaFreeHost(h_B);
-    cudaFreeHost(h_C);
 }
