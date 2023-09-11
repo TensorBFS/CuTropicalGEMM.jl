@@ -13,9 +13,7 @@ function benchmakr_CuTropicalGemmFP32(m::T, n::T, k::T) where{T}
 
     # I found hat @belapsed and CUDA.@sync can not properly benchmark the function from .so lib
     elapsed_time = @belapsed CUDA.@sync begin
-        1 + 1
-        CuTropicalGemmMatmulFP32!($m, $n, $k, $CuA, $CuB, $CuC)
-        1 + 1
+        MaxAddFP32!($m, $n, $k, $CuA, $CuB, $CuC)
     end
 
     work_load = 2 * m * n * k
