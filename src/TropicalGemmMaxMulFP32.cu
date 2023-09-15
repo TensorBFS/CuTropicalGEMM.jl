@@ -517,6 +517,8 @@ void sgemm_128x128x8_kernel_maxmul(const float *A,
     }
 }
 
+
+
 extern "C"
 void TropicalGemmMaxMul(int m, int n, int k, float *d_A, float *d_B, float *d_C){
 

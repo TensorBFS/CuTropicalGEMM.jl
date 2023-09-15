@@ -13,6 +13,7 @@ function copy_CuMatrix(A::CuDeviceMatrix{T, 1}) where{T}
     return nothing
 end
 
+
 N = 1024
 A = CuArray(rand(Float32, N, N));
 @cuda threads = N blocks = N shmem =(N)*sizeof(Float32) copy_CuMatrix(A)
