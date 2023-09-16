@@ -5,3 +5,4 @@
 lib
 .vscode
 Artifact
+deps/TropicalGemmC.so

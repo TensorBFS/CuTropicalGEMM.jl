@@ -2,7 +2,8 @@ module CuTropicalGEMM
 
 using CUDA
 
-const libtropicalgemm = joinpath("/home/xuanzhaogao/code/CuTropicalGEMM.jl", "deps", "TropicalGemmC.so")
+path = @__DIR__
+const libtropicalgemm = joinpath(path, "../deps", "TropicalGemmC.so")
 
 include("max_add.jl")
 include("min_add.jl")
