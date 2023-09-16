@@ -1,10 +1,12 @@
 module CuTropicalGEMM
 
-export CuTropicalGemmMatmulFP32!
-
 using CUDA
-using Artifacts
 
-include("TropicalGemm_Cuda_wrapper.jl")
+const libtropicalgemm = joinpath("/home/xuanzhaogao/code/CuTropicalGEMM.jl", "deps", "TropicalGemmC.so")
+
+include("max_add.jl")
+include("min_add.jl")
+include("max_mul.jl")
+include("and_or.jl")
 
 end

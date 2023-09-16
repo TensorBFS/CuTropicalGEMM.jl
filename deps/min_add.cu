@@ -19,9 +19,10 @@
 #define FETCH_FLOAT4(pointer) (reinterpret_cast<float4*>(&(pointer))[0])
 
 
-#define OPERATOR_ADD(a, b) (max(a, b))
+#define OPERATOR_ADD(a, b) (min(a, b))
 #define OPERATOR_MUT(a, b) (a + b)
-#define PADDING -INFINITY
+#define PADDING_FP INFINITY
+#define PADDING_INT INT_MAX
 
 template <
     const int BLOCK_SIZE_M,  // width of block of C that each thread block calculate
@@ -31,7 +32,7 @@ template <
     const int THREAD_SIZE_N,  // width of block of C that each thread calculate
     const bool ENABLE_DOUBLE_BUFFER // whether enable double buffering or not
     > 
-__global__ void FP32_kernel( 
+__global__ void FP32_minadd_kernel( 
     float * __restrict__ A,
     float * __restrict__ B,
     float * __restrict__ C,
@@ -58,7 +59,7 @@ __global__ void FP32_kernel(
     __shared__ float Bs[BLOCK_SIZE_KN];
 
     // registers for C
-    float accum[THREAD_SIZE_MN] = {0};
+    float accum[THREAD_SIZE_MN] = {PADDING_FP};
     float A_reg[THREAD_SIZE_M] = {0};
     float B_reg[THREAD_SIZE_N] = {0};
     
@@ -86,7 +87,7 @@ __global__ void FP32_kernel(
             const int row = BLOCK_SIZE_M * blockIdx.x + A_TILE_ROW ;
             const int col = A_TILE_COL + i + tile_idx;
             if (blockIdx.x == gridDim.x -1 || blockIdx.y == gridDim.y - 1) {
-                As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)] = row < M && col < K ? A[OFFSET(row, col, M)] : PADDING;
+                As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)] = row < M && col < K ? A[OFFSET(row, col, M)] : PADDING_FP;
                 // printf("%d, %d, %d, %d, %d, %d, %f\n", blockIdx.x, gridDim.x -1, blockIdx.y, gridDim.y - 1, row, col, As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)]);
             } else {
                 As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)] = A[OFFSET(row, col, M)];
@@ -99,7 +100,7 @@ __global__ void FP32_kernel(
             const int row = tile_idx + B_TILE_ROW;
             const int col = BLOCK_SIZE_N * blockIdx.y + i + B_TILE_COL;
             if (blockIdx.x == gridDim.x -1 || blockIdx.y == gridDim.y - 1) {
-                Bs[OFFSET(B_TILE_ROW, i + B_TILE_COL, BLOCK_SIZE_K)] = row < K && col < N ? B[OFFSET(row, col, K)] : PADDING;
+                Bs[OFFSET(B_TILE_ROW, i + B_TILE_COL, BLOCK_SIZE_K)] = row < K && col < N ? B[OFFSET(row, col, K)] : PADDING_FP;
             } else {
                 Bs[OFFSET(B_TILE_ROW, i + B_TILE_COL, BLOCK_SIZE_K)] = B[OFFSET(row, col, K)];
             }
@@ -160,7 +161,7 @@ template <
     const int THREAD_SIZE_N,  // width of block of C that each thread calculate
     const bool ENABLE_DOUBLE_BUFFER // whether enable double buffering or not
     > 
-__global__ void FP64_kernel( 
+__global__ void FP64_minadd_kernel( 
     double * __restrict__ A,
     double * __restrict__ B,
     double * __restrict__ C,
@@ -187,7 +188,7 @@ __global__ void FP64_kernel(
     __shared__ double Bs[BLOCK_SIZE_KN];
 
     // registers for C
-    double accum[THREAD_SIZE_MN] = {0};
+    double accum[THREAD_SIZE_MN] = {PADDING_FP};
     double A_reg[THREAD_SIZE_M] = {0};
     double B_reg[THREAD_SIZE_N] = {0};
     
@@ -215,7 +216,7 @@ __global__ void FP64_kernel(
             const int row = BLOCK_SIZE_M * blockIdx.x + A_TILE_ROW ;
             const int col = A_TILE_COL + i + tile_idx;
             if (blockIdx.x == gridDim.x -1 || blockIdx.y == gridDim.y - 1) {
-                As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)] = row < M && col < K ? A[OFFSET(row, col, M)] : PADDING;
+                As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)] = row < M && col < K ? A[OFFSET(row, col, M)] : PADDING_FP;
                 // printf("%d, %d, %d, %d, %d, %d, %f\n", blockIdx.x, gridDim.x -1, blockIdx.y, gridDim.y - 1, row, col, As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)]);
             } else {
                 As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)] = A[OFFSET(row, col, M)];
@@ -228,7 +229,7 @@ __global__ void FP64_kernel(
             const int row = tile_idx + B_TILE_ROW;
             const int col = BLOCK_SIZE_N * blockIdx.y + i + B_TILE_COL;
             if (blockIdx.x == gridDim.x -1 || blockIdx.y == gridDim.y - 1) {
-                Bs[OFFSET(B_TILE_ROW, i + B_TILE_COL, BLOCK_SIZE_K)] = row < K && col < N ? B[OFFSET(row, col, K)] : PADDING;
+                Bs[OFFSET(B_TILE_ROW, i + B_TILE_COL, BLOCK_SIZE_K)] = row < K && col < N ? B[OFFSET(row, col, K)] : PADDING_FP;
             } else {
                 Bs[OFFSET(B_TILE_ROW, i + B_TILE_COL, BLOCK_SIZE_K)] = B[OFFSET(row, col, K)];
             }
@@ -289,7 +290,7 @@ template <
     const int THREAD_SIZE_N,  // width of block of C that each thread calculate
     const bool ENABLE_DOUBLE_BUFFER // whether enable double buffering or not
     > 
-__global__ void INT32_kernel( 
+__global__ void INT32_minadd_kernel( 
     int * __restrict__ A,
     int * __restrict__ B,
     int * __restrict__ C,
@@ -316,7 +317,7 @@ __global__ void INT32_kernel(
     __shared__ int Bs[BLOCK_SIZE_KN];
 
     // registers for C
-    int accum[THREAD_SIZE_MN] = {0};
+    int accum[THREAD_SIZE_MN] = {PADDING_INT};
     int A_reg[THREAD_SIZE_M] = {0};
     int B_reg[THREAD_SIZE_N] = {0};
     
@@ -344,7 +345,7 @@ __global__ void INT32_kernel(
             const int row = BLOCK_SIZE_M * blockIdx.x + A_TILE_ROW ;
             const int col = A_TILE_COL + i + tile_idx;
             if (blockIdx.x == gridDim.x -1 || blockIdx.y == gridDim.y - 1) {
-                As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)] = row < M && col < K ? A[OFFSET(row, col, M)] : PADDING;
+                As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)] = row < M && col < K ? A[OFFSET(row, col, M)] : PADDING_INT;
                 // printf("%d, %d, %d, %d, %d, %d, %f\n", blockIdx.x, gridDim.x -1, blockIdx.y, gridDim.y - 1, row, col, As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)]);
             } else {
                 As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)] = A[OFFSET(row, col, M)];
@@ -357,7 +358,7 @@ __global__ void INT32_kernel(
             const int row = tile_idx + B_TILE_ROW;
             const int col = BLOCK_SIZE_N * blockIdx.y + i + B_TILE_COL;
             if (blockIdx.x == gridDim.x -1 || blockIdx.y == gridDim.y - 1) {
-                Bs[OFFSET(B_TILE_ROW, i + B_TILE_COL, BLOCK_SIZE_K)] = row < K && col < N ? B[OFFSET(row, col, K)] : PADDING;
+                Bs[OFFSET(B_TILE_ROW, i + B_TILE_COL, BLOCK_SIZE_K)] = row < K && col < N ? B[OFFSET(row, col, K)] : PADDING_INT;
             } else {
                 Bs[OFFSET(B_TILE_ROW, i + B_TILE_COL, BLOCK_SIZE_K)] = B[OFFSET(row, col, K)];
             }
@@ -418,7 +419,7 @@ template <
     const int THREAD_SIZE_N,  // width of block of C that each thread calculate
     const bool ENABLE_long_BUFFER // whether enable long buffering or not
     > 
-__global__ void INT64_kernel( 
+__global__ void INT64_minadd_kernel( 
     long * __restrict__ A,
     long * __restrict__ B,
     long * __restrict__ C,
@@ -445,7 +446,7 @@ __global__ void INT64_kernel(
     __shared__ long Bs[BLOCK_SIZE_KN];
 
     // registers for C
-    long accum[THREAD_SIZE_MN] = {0};
+    long accum[THREAD_SIZE_MN] = {PADDING_INT};
     long A_reg[THREAD_SIZE_M] = {0};
     long B_reg[THREAD_SIZE_N] = {0};
     
@@ -473,7 +474,7 @@ __global__ void INT64_kernel(
             const int row = BLOCK_SIZE_M * blockIdx.x + A_TILE_ROW ;
             const int col = A_TILE_COL + i + tile_idx;
             if (blockIdx.x == gridDim.x -1 || blockIdx.y == gridDim.y - 1) {
-                As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)] = row < M && col < K ? A[OFFSET(row, col, M)] : PADDING;
+                As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)] = row < M && col < K ? A[OFFSET(row, col, M)] : PADDING_INT;
                 // printf("%d, %d, %d, %d, %d, %d, %f\n", blockIdx.x, gridDim.x -1, blockIdx.y, gridDim.y - 1, row, col, As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)]);
             } else {
                 As[OFFSET(A_TILE_ROW, i + A_TILE_COL, BLOCK_SIZE_M)] = A[OFFSET(row, col, M)];
@@ -486,7 +487,7 @@ __global__ void INT64_kernel(
             const int row = tile_idx + B_TILE_ROW;
             const int col = BLOCK_SIZE_N * blockIdx.y + i + B_TILE_COL;
             if (blockIdx.x == gridDim.x -1 || blockIdx.y == gridDim.y - 1) {
-                Bs[OFFSET(B_TILE_ROW, i + B_TILE_COL, BLOCK_SIZE_K)] = row < K && col < N ? B[OFFSET(row, col, K)] : PADDING;
+                Bs[OFFSET(B_TILE_ROW, i + B_TILE_COL, BLOCK_SIZE_K)] = row < K && col < N ? B[OFFSET(row, col, K)] : PADDING_INT;
             } else {
                 Bs[OFFSET(B_TILE_ROW, i + B_TILE_COL, BLOCK_SIZE_K)] = B[OFFSET(row, col, K)];
             }
@@ -540,7 +541,7 @@ __global__ void INT64_kernel(
 }
 
 extern "C"
-void FP32(const int m, const int n, const int k, float *d_A, float *d_B, float *d_C){
+void FP32_minadd(const int m, const int n, const int k, float *d_A, float *d_B, float *d_C){
 
     const int BLOCK_SIZE_M = 128;
     const int BLOCK_SIZE_K = 8;
@@ -556,13 +557,13 @@ void FP32(const int m, const int n, const int k, float *d_A, float *d_B, float *
     if (n % BLOCK_SIZE_N != 0)
         dimGrid.y++;
 
-    FP32_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N, ENABLE_DOUBLE_BUFFER> 
+    FP32_minadd_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N, ENABLE_DOUBLE_BUFFER> 
         <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, m, n, k);
 
 }
 
 extern "C"
-void FP64(const int m, const int n, const int k, double *d_A, double *d_B, double *d_C){
+void FP64_minadd(const int m, const int n, const int k, double *d_A, double *d_B, double *d_C){
 
     const int BLOCK_SIZE_M = 64;
     const int BLOCK_SIZE_K = 8;
@@ -578,13 +579,13 @@ void FP64(const int m, const int n, const int k, double *d_A, double *d_B, doubl
     if (n % BLOCK_SIZE_N != 0)
         dimGrid.y++;
 
-    FP64_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N, ENABLE_DOUBLE_BUFFER> 
+    FP64_minadd_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N, ENABLE_DOUBLE_BUFFER> 
         <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, m, n, k);
 
 }
 
 extern "C"
-void INT32(const int m, const int n, const int k, int *d_A, int *d_B, int *d_C){
+void INT32_minadd(const int m, const int n, const int k, int *d_A, int *d_B, int *d_C){
 
     const int BLOCK_SIZE_M = 128;
     const int BLOCK_SIZE_K = 8;
@@ -600,13 +601,13 @@ void INT32(const int m, const int n, const int k, int *d_A, int *d_B, int *d_C){
     if (n % BLOCK_SIZE_N != 0)
         dimGrid.y++;
 
-    INT32_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N, ENABLE_DOUBLE_BUFFER> 
+    INT32_minadd_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N, ENABLE_DOUBLE_BUFFER> 
         <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, m, n, k);
 
 }
 
 extern "C"
-void INT64(const int m, const int n, const int k, long *d_A, long *d_B, long *d_C){
+void INT64_minadd(const int m, const int n, const int k, long *d_A, long *d_B, long *d_C){
 
     const int BLOCK_SIZE_M = 64;
     const int BLOCK_SIZE_K = 8;
@@ -622,7 +623,7 @@ void INT64(const int m, const int n, const int k, long *d_A, long *d_B, long *d_
     if (n % BLOCK_SIZE_N != 0)
         dimGrid.y++;
 
-    INT64_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N, ENABLE_DOUBLE_BUFFER> 
+    INT64_minadd_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N, ENABLE_DOUBLE_BUFFER> 
         <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, m, n, k);
-
 }
+
