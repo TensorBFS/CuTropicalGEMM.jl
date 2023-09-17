@@ -137,6 +137,31 @@ void FP32_mutadd(const int M, const int N, const int K, float *d_A, float *d_B, 
     const int THREAD_SIZE_Y = 6;
     const int THREAD_SIZE_X = 4;
 
+    // printf("A[M+1] = %f, B[M+1] = %f, C[M+1] = %f\n", d_A[M], d_B[M], d_C[M]);
+
+    dim3 dimBlock(BLOCK_SIZE_N / THREAD_SIZE_X, BLOCK_SIZE_M / THREAD_SIZE_Y);
+    dim3 dimGrid(N / BLOCK_SIZE_N, M / BLOCK_SIZE_M);
+    if (N % BLOCK_SIZE_N != 0)
+        dimGrid.x++;
+    if (M % BLOCK_SIZE_M != 0)
+        dimGrid.y++;
+
+    FP32_mutadd_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X> 
+        <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, M, K, N);
+
+}
+
+extern "C"
+void FP64_mutadd(const int M, const int N, const int K, double *d_A, double *d_B, double *d_C){
+
+    const int BLOCK_SIZE_M = 96;
+    const int BLOCK_SIZE_K = 32;
+    const int BLOCK_SIZE_N = 64;
+    const int THREAD_SIZE_Y = 6;
+    const int THREAD_SIZE_X = 4;
+
+    // printf("A[M+1] = %f, B[M+1] = %f, C[M+1] = %f\n", d_A[M], d_B[M], d_C[M]);
+
     dim3 dimBlock(BLOCK_SIZE_N / THREAD_SIZE_X, BLOCK_SIZE_M / THREAD_SIZE_Y);
     dim3 dimGrid(N / BLOCK_SIZE_N, M / BLOCK_SIZE_M);
     if (N % BLOCK_SIZE_N != 0)

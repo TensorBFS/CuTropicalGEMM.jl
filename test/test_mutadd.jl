@@ -5,7 +5,7 @@ function direct_mutadd(A::Matrix{T}, B::Matrix{T}, C::Matrix{T}, i::Int, j::Int)
     sum = C[i, j]
 
     for k in 1:K
-        sum += A[i, k] * B[k, j]
+        sum += A[i, k] + B[k, j]
     end
 
     return sum
@@ -13,9 +13,9 @@ end
 
 @testset "Testing Matrix Mut Add" begin
 
-    M = 100
-    N = 101
-    K = 102
+    M = 1024
+    N = 1025
+    K = 1026
 
     @testset "Float32 max add" begin 
         A = 2f0 .* rand(Float32, M, K) .- 1f0
@@ -30,7 +30,7 @@ end
 
         D = Array(CuC)
 
-        @test D ≈ direct_mutadd(A, B, C)
+        @test D ≈ C + A * B
     end
 
     # @testset "Float64 max add" begin
