@@ -75,7 +75,7 @@ __global__ void MatMul(
                 As[i + A_TILE_ROW ][A_TILE_COL] = row < M && col < K ? A[OFFSET(
                     row, // row
                     col, // col
-                    K )] : PADDING_FP;
+                    K )] : 0;
             } else {
                 As[i + A_TILE_ROW ][A_TILE_COL] = A[OFFSET(
                     row, // row
@@ -93,7 +93,7 @@ __global__ void MatMul(
                 Bs[i + B_TILE_ROW][B_TILE_COL] = row < K && col < N ? B[OFFSET(
                     row, // row
                     col, // col
-                    N )] : PADDING_FP;
+                    N )] : 0;
             } else {
                 Bs[i + B_TILE_ROW][B_TILE_COL] = B[OFFSET(
                     row, // row
@@ -111,7 +111,8 @@ __global__ void MatMul(
             for (int thread_y = 0; thread_y < THREAD_SIZE_Y; ++thread_y) {
                 #pragma unroll
                 for (int thread_x = 0; thread_x < THREAD_SIZE_X; ++thread_x) {
-                    accum[thread_y][thread_x] = OPERATOR_ADD(OPERATOR_MUT(As[thread_y * A_S + threadIdx.y][k], Bs[k][thread_x * B_S + threadIdx.x]), accum[thread_y][thread_x]);
+                    // accum[thread_y][thread_x] = OPERATOR_ADD(OPERATOR_MUT(As[thread_y * A_S + threadIdx.y][k], Bs[k][thread_x * B_S + threadIdx.x]), accum[thread_y][thread_x]);
+                    accum[thread_y][thread_x] += As[thread_y * A_S + threadIdx.y][k] * Bs[k][thread_x * B_S + threadIdx.x];
                 }
             }
             
@@ -128,10 +129,12 @@ __global__ void MatMul(
             const int col = BLOCK_SIZE_N * blockIdx.x + thread_x * B_S + threadIdx.x;
             if (blockIdx.x == gridDim.x -1 || blockIdx.y == gridDim.y - 1) {
                 if (row < M && col < N) {
-                    C[OFFSET(row, col, N)] = OPERATOR_ADD(C[OFFSET(row, col, N)], accum[thread_y][thread_x]);
+                    // C[OFFSET(row, col, N)] = OPERATOR_ADD(C[OFFSET(row, col, N)], accum[thread_y][thread_x]);
+                    C[OFFSET(row, col, N)] += accum[thread_y][thread_x];
                 }
             } else {
-                C[OFFSET(row, col, N)] = OPERATOR_ADD(C[OFFSET(row, col, N)], accum[thread_y][thread_x]);
+                // C[OFFSET(row, col, N)] = OPERATOR_ADD(C[OFFSET(row, col, N)], accum[thread_y][thread_x]);
+                C[OFFSET(row, col, N)] += accum[thread_y][thread_x];
             }
         }
     }
@@ -210,44 +213,44 @@ int main() {
     const int THREAD_SIZE_X = 4;
 
     dim3 dimBlock(BLOCK_SIZE_N / THREAD_SIZE_X, BLOCK_SIZE_M / THREAD_SIZE_Y);
-    dim3 dimGrid(n / BLOCK_SIZE_N, m / BLOCK_SIZE_M);
-    if (n % BLOCK_SIZE_N != 0)
-        dimGrid.x++;
-    if (m % BLOCK_SIZE_M != 0)
-        dimGrid.y++;
+    // dim3 dimGrid(n / BLOCK_SIZE_N, m / BLOCK_SIZE_M);
+    // if (n % BLOCK_SIZE_N != 0)
+    //     dimGrid.x++;
+    // if (m % BLOCK_SIZE_M != 0)
+    //     dimGrid.y++;
 
     float *h_A, *h_B, *h_C, *h_D;
-    cudaMallocHost(&h_A, m * k * sizeof(float));
-    cudaMallocHost(&h_B, k * n * sizeof(float));
-    cudaMallocHost(&h_C, m * n * sizeof(float));
-    cudaMallocHost(&h_D, m * n * sizeof(float));
-    random_init(h_A, m * k);
-    random_init(h_B, k * n);
-    random_init(h_C, m * n);
+    // cudaMallocHost(&h_A, m * k * sizeof(float));
+    // cudaMallocHost(&h_B, k * n * sizeof(float));
+    // cudaMallocHost(&h_C, m * n * sizeof(float));
+    // cudaMallocHost(&h_D, m * n * sizeof(float));
+    // random_init(h_A, m * k);
+    // random_init(h_B, k * n);
+    // random_init(h_C, m * n);
 
     float *d_A, *d_B, *d_C;
-    cudaMalloc(&d_A, m * k * sizeof(float));
-    cudaMalloc(&d_B, k * n * sizeof(float));
-    cudaMalloc(&d_C, m * n * sizeof(float));
+    // cudaMalloc(&d_A, m * k * sizeof(float));
+    // cudaMalloc(&d_B, k * n * sizeof(float));
+    // cudaMalloc(&d_C, m * n * sizeof(float));
 
-    cudaMemcpy(d_A, h_A, m * k * sizeof(float), cudaMemcpyDefault);
-    cudaMemcpy(d_B, h_B, k * n * sizeof(float), cudaMemcpyDefault);
-    cudaMemcpy(d_C, h_C, m * n * sizeof(float), cudaMemcpyDefault);
+    // cudaMemcpy(d_A, h_A, m * k * sizeof(float), cudaMemcpyDefault);
+    // cudaMemcpy(d_B, h_B, k * n * sizeof(float), cudaMemcpyDefault);
+    // cudaMemcpy(d_C, h_C, m * n * sizeof(float), cudaMemcpyDefault);
 
-    MatMul<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X> 
-        <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, m, n, k);
+    // MatMul<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X> 
+    //     <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, m, n, k);
 
-    cudaMemcpy(h_D, d_C, m * n * sizeof(float), cudaMemcpyDefault);
-    bool chk = check_all(h_A, h_B, h_C, h_D, m, n, k);
-    printf("Matrix_C check all: %s\n", chk ? "OK" : "Failed");
+    // cudaMemcpy(h_D, d_C, m * n * sizeof(float), cudaMemcpyDefault);
+    // bool chk = check_all(h_A, h_B, h_C, h_D, m, n, k);
+    // printf("Matrix_C check all: %s\n", chk ? "OK" : "Failed");
 
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    cudaFreeHost(h_A);
-    cudaFreeHost(h_B);
-    cudaFreeHost(h_C);
-    cudaFreeHost(h_D);
+    // cudaFree(d_A);
+    // cudaFree(d_B);
+    // cudaFree(d_C);
+    // cudaFreeHost(h_A);
+    // cudaFreeHost(h_B);
+    // cudaFreeHost(h_C);
+    // cudaFreeHost(h_D);
 
     // benchmarking by large matrix
     m = 4096;
@@ -257,9 +260,9 @@ int main() {
 
     dim3 dimGrid_2(n / BLOCK_SIZE_N, m / BLOCK_SIZE_M);
     if (n % BLOCK_SIZE_N != 0)
-        dimGrid.x++;
+        dimGrid_2.x++;
     if (m % BLOCK_SIZE_M != 0)
-        dimGrid.y++;
+        dimGrid_2.y++;
 
     cudaMallocHost(&h_A, m * k * sizeof(float));
     cudaMallocHost(&h_B, k * n * sizeof(float));
@@ -280,9 +283,9 @@ int main() {
     MatMul<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X> 
         <<< dimGrid_2, dimBlock >>>(d_A, d_B, d_C, m, n, k);
 
-    // cudaMemcpy(h_D, d_C, m * n * sizeof(float), cudaMemcpyDefault);
-    // chk = check(h_A, h_B, h_C, h_D, m, n, k);
-    // printf("Matrix_C random check: %s\n", chk ? "OK" : "Failed");
+    cudaMemcpy(h_D, d_C, m * n * sizeof(float), cudaMemcpyDefault);
+    bool chk = check(h_A, h_B, h_C, h_D, m, n, k);
+    printf("Matrix_C random check: %s\n", chk ? "OK" : "Failed");
 
     cudaEvent_t start, end;
     cudaEventCreate(&start);

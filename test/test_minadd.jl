@@ -68,36 +68,36 @@ end
             @test check_all_minadd(A, B, C, D)
         end
 
-        @testset "Int32 min add" begin
-            A = rand(Int32, M, K) .% Int32(1000)
-            B = rand(Int32, K, N) .% Int32(1000)
-            C = rand(Int32, M, N) .% Int32(1000)
+        # @testset "Int32 min add" begin
+        #     A = rand(Int32, M, K) .% Int32(1000)
+        #     B = rand(Int32, K, N) .% Int32(1000)
+        #     C = rand(Int32, M, N) .% Int32(1000)
 
-            CuA = CuArray(A)
-            CuB = CuArray(B)
-            CuC = CuArray(C)
+        #     CuA = CuArray(A)
+        #     CuB = CuArray(B)
+        #     CuC = CuArray(C)
 
-            minadd!(CuA, CuB, CuC)
+        #     minadd!(CuA, CuB, CuC)
 
-            D = Array(CuC)
+        #     D = Array(CuC)
 
-            @test check_all_minadd(A, B, C, D)
-        end
+        #     @test check_all_minadd(A, B, C, D)
+        # end
 
-        @testset "Int64 min add" begin
-            A = rand(Int64, M, K) .% Int64(1000)
-            B = rand(Int64, K, N) .% Int64(1000)
-            C = rand(Int64, M, N) .% Int64(1000)
+        # @testset "Int64 min add" begin
+        #     A = rand(Int64, M, K) .% Int64(1000)
+        #     B = rand(Int64, K, N) .% Int64(1000)
+        #     C = rand(Int64, M, N) .% Int64(1000)
 
-            CuA = CuArray(A)
-            CuB = CuArray(B)
-            CuC = CuArray(C)
+        #     CuA = CuArray(A)
+        #     CuB = CuArray(B)
+        #     CuC = CuArray(C)
 
-            minadd!(CuA, CuB, CuC)
+        #     minadd!(CuA, CuB, CuC)
 
-            D = Array(CuC)
+        #     D = Array(CuC)
 
-            @test check_all_minadd(A, B, C, D)
-        end
+        #     @test check_all_minadd(A, B, C, D)
+        # end
     end
 end

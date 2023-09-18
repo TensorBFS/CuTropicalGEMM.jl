@@ -258,9 +258,9 @@ int main() {
 
     dim3 dimGrid_2(n / BLOCK_SIZE_N, m / BLOCK_SIZE_M);
     if (n % BLOCK_SIZE_N != 0)
-        dimGrid.x++;
+        dimGrid_2.x++;
     if (m % BLOCK_SIZE_M != 0)
-        dimGrid.y++;
+        dimGrid_2.y++;
 
     cudaMallocHost(&h_A, m * k * sizeof(float));
     cudaMallocHost(&h_B, k * n * sizeof(float));
@@ -281,9 +281,9 @@ int main() {
     MatMul<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X> 
         <<< dimGrid_2, dimBlock >>>(d_A, d_B, d_C, m, n, k);
 
-    // cudaMemcpy(h_D, d_C, m * n * sizeof(float), cudaMemcpyDefault);
-    // chk = check(h_A, h_B, h_C, h_D, m, n, k);
-    // printf("Matrix_C random check: %s\n", chk ? "OK" : "Failed");
+    cudaMemcpy(h_D, d_C, m * n * sizeof(float), cudaMemcpyDefault);
+    chk = check(h_A, h_B, h_C, h_D, m, n, k);
+    printf("Matrix_C random check: %s\n", chk ? "OK" : "Failed");
 
     cudaEvent_t start, end;
     cudaEventCreate(&start);

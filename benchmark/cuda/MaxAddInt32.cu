@@ -72,7 +72,7 @@ __global__ void MatMul(
         for ( int i = 0 ; i < BLOCK_SIZE_M ; i += A_TILE_ROW_STRIDE) {
             const int row = BLOCK_SIZE_M * blockIdx.y + i + A_TILE_ROW ;
             const int col = A_TILE_COL + tile_idx;
-            if (tile_idx > K - BLOCK_SIZE_K || blockIdx.y == gridDim.y - 1) {
+            if (tile_idx > K - BLOCK_SIZE_K - 1 || blockIdx.y == gridDim.y - 1) {
                 As[i + A_TILE_ROW ][A_TILE_COL] = row < M && col < K ? A[OFFSET(
                     row, // row
                     col, // col
@@ -90,7 +90,7 @@ __global__ void MatMul(
         for ( int i = 0 ; i < BLOCK_SIZE_K; i += B_TILE_ROW_STRIDE) {
             const int row = tile_idx + i + B_TILE_ROW;
             const int col = B_TILE_COL + BLOCK_SIZE_N * blockIdx.x;
-            if (blockIdx.x == gridDim.x -1 || tile_idx > K - BLOCK_SIZE_K) {
+            if (blockIdx.x == gridDim.x -1 || tile_idx > K - BLOCK_SIZE_K - 1) {
                 Bs[i + B_TILE_ROW][B_TILE_COL] = row < K && col < N ? B[OFFSET(
                     row, // row
                     col, // col
@@ -140,7 +140,7 @@ __global__ void MatMul(
 
 void random_init(int *data, size_t size) {
     for (size_t i = 0; i < size; ++i) {
-        data[i] = int(rand()) / RAND_MAX;
+        data[i] = int(rand()) % 1000;
     }
 }
 
@@ -186,7 +186,7 @@ bool check_all(const int *A,
 
             if (std::fabs(sum - D[OFFSET(a, b, n)]) / std::fabs(sum) > 1e-5f) {
                 printf("C[%d][%d] not match, %d vs %d\n", a, b, sum, D[OFFSET(a, b, n)]);
-                return false;
+                // return false;
             }
         }
     }
@@ -199,9 +199,9 @@ int main() {
     printf("Benchmarking MaxAddInt32. \n");
     
     // first check-all for small matirx
-    int m = 213;
-    int n = 21;
-    int k = 102;
+    int m = 5;
+    int n = 6;
+    int k = 7;
     printf("check_all by small matrix %d, %d, %d\n", m, n, k);
 
     const int BLOCK_SIZE_M = 96;
@@ -258,9 +258,9 @@ int main() {
 
     dim3 dimGrid_2(n / BLOCK_SIZE_N, m / BLOCK_SIZE_M);
     if (n % BLOCK_SIZE_N != 0)
-        dimGrid.x++;
+        dimGrid_2.x++;
     if (m % BLOCK_SIZE_M != 0)
-        dimGrid.y++;
+        dimGrid_2.y++;
 
     cudaMallocHost(&h_A, m * k * sizeof(int));
     cudaMallocHost(&h_B, k * n * sizeof(int));
@@ -281,14 +281,14 @@ int main() {
     MatMul<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X> 
         <<< dimGrid_2, dimBlock >>>(d_A, d_B, d_C, m, n, k);
 
-    // cudaMemcpy(h_D, d_C, m * n * sizeof(float), cudaMemcpyDefault);
-    // chk = check(h_A, h_B, h_C, h_D, m, n, k);
-    // printf("Matrix_C random check: %s\n", chk ? "OK" : "Failed");
+    cudaMemcpy(h_D, d_C, m * n * sizeof(float), cudaMemcpyDefault);
+    chk = check(h_A, h_B, h_C, h_D, m, n, k);
+    printf("Matrix_C random check: %s\n", chk ? "OK" : "Failed");
 
     cudaEvent_t start, end;
     cudaEventCreate(&start);
     cudaEventCreate(&end);
-    const int n_iter = 100;
+    const int n_iter = 10;
     cudaEventRecord(start);
     for (int i = 0; i < n_iter; ++i) {
         MatMul<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X> 

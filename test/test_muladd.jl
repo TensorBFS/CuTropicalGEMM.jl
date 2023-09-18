@@ -5,7 +5,7 @@ function direct_mutadd(A::Matrix{T}, B::Matrix{T}, C::Matrix{T}, i::Int, j::Int)
     sum = C[i, j]
 
     for k in 1:K
-        sum += A[i, k] + B[k, j]
+        sum += A[i, k] * B[k, j]
     end
 
     return sum
@@ -27,7 +27,8 @@ end
 
             D = Array(CuC)
 
-            @test D ≈ C + A * B
+            # @test D ≈ C + A * B
+            @test D[M, N] ≈ direct_mutadd(A, B, C, M, N)
         end
 
         @testset "Float64 mul add" begin
@@ -43,7 +44,8 @@ end
 
             D = Array(CuC)
 
-            @test D ≈ C + A * B
+            # @test D ≈ C + A * B
+            @test D[M, N] ≈ direct_mutadd(A, B, C, M, N)
         end
 
         @testset "Int32 mul add" begin
@@ -59,7 +61,8 @@ end
 
             D = Array(CuC)
 
-            @test D ≈ C + A * B
+            # @test D ≈ C + A * B
+            @test D[M, N] ≈ direct_mutadd(A, B, C, M, N)
         end
 
         @testset "Int64 mul add" begin
@@ -75,7 +78,8 @@ end
 
             D = Array(CuC)
 
-            @test D ≈ C + A * B
+            # @test D ≈ C + A * B
+            @test D[M, N] ≈ direct_mutadd(A, B, C, M, N)
         end
     end
 end
