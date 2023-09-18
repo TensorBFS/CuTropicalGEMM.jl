@@ -5,4 +5,7 @@
 lib
 .vscode
 Artifact
-deps/TropicalGemmC.so
+*.so
+*.out
+*.log
+build

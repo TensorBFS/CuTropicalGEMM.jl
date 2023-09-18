@@ -11,91 +11,93 @@ function direct_maxmul(A::Matrix{T}, B::Matrix{T}, C::Matrix{T}, i::Int, j::Int)
     return sum
 end
 
+function check_all_maxmul(A::Matrix{T}, B::Matrix{T}, C::Matrix{T}, D::Matrix{T}) where{T}
+    M = size(A)[1]
+    K = size(A)[2]
+    N = size(B)[2]
+    
+    for i in 1:M
+        for j in 1:N
+            sum = C[i, j]
+
+            for k in 1:K
+                sum = max(sum, A[i, k] * B[k, j])
+            end
+
+            if sum ≉ D[i, j]
+                @show i, j, sum, D[i, j]
+                return false
+            end
+        end
+    end
+
+    return true
+end
+
 @testset "Testing Matrix max mul" begin
-    M = rand(3000:6000)
-    N = rand(3000:6000)
-    K = rand(3000:6000)
-    @show M, N, K
-    @testset "Float32 max mul" begin
-        A = 2f0 .* rand(Float32, M, K) .- 1f0
-        B = 2f0 .* rand(Float32, K, N) .- 1f0
-        C = 2f0 .* rand(Float32, M, N) .- 1f0
+    for (M, N, K) in [(5, 6, 7), (101, 102, 103), (1024, 1024, 1024)]
+        @testset "Float32 max mul" begin 
+            A = 2f0 .* rand(Float32, M, K)
+            B = 2f0 .* rand(Float32, K, N)
+            C = 2f0 .* rand(Float32, M, N)
 
-        CuA = CuArray(A)
-        CuB = CuArray(B)
-        CuC = CuArray(C)
+            CuA = CuArray(A)
+            CuB = CuArray(B)
+            CuC = CuArray(C)
 
-        maxmul!(CuA, CuB, CuC)
+            maxmul!(CuA, CuB, CuC)
 
-        D = Array(CuC)
+            D = Array(CuC)
 
-        for _ in 1:100
-            i = rand(1:M)
-            j = rand(1:N)
-            @test D[i, j] ≈ direct_maxmul(A, B, C, i, j)
+            @test check_all_maxmul(A, B, C, D)
         end
-    end
 
-    @testset "Float64 max mul" begin
-        
-        A = 2.0 .* rand(Float64, M, K) .- 1.0
-        B = 2.0 .* rand(Float64, K, N) .- 1.0
-        C = 2.0 .* rand(Float64, M, N) .- 1.0
+        @testset "Float64 max mul" begin
+            A = 2.0 .* rand(Float64, M, K)
+            B = 2.0 .* rand(Float64, K, N)
+            C = 2.0 .* rand(Float64, M, N)
 
-        CuA = CuArray(A)
-        CuB = CuArray(B)
-        CuC = CuArray(C)
+            CuA = CuArray(A)
+            CuB = CuArray(B)
+            CuC = CuArray(C)
 
-        maxmul!(CuA, CuB, CuC)
+            maxmul!(CuA, CuB, CuC)
 
-        D = Array(CuC)
+            D = Array(CuC)
 
-        for _ in 1:100
-            i = rand(1:M)
-            j = rand(1:N)
-            @test D[i, j] ≈ direct_maxmul(A, B, C, i, j)
+            @test check_all_maxmul(A, B, C, D)
         end
-    end
 
-    @testset "Int32 max mul" begin
-        
-        A = Int32(2) .* rand(Int32, M, K) .- Int32(1)
-        B = Int32(2) .* rand(Int32, K, N) .- Int32(1)
-        C = Int32(2) .* rand(Int32, M, N) .- Int32(1)
+        @testset "Int32 max mul" begin
+            A = abs.(rand(Int32, M, K) .% Int32(1000))
+            B = abs.(rand(Int32, K, N) .% Int32(1000))
+            C = abs.(rand(Int32, M, N) .% Int32(1000))
 
-        CuA = CuArray(A)
-        CuB = CuArray(B)
-        CuC = CuArray(C)
+            CuA = CuArray(A)
+            CuB = CuArray(B)
+            CuC = CuArray(C)
 
-        maxmul!(CuA, CuB, CuC)
+            maxmul!(CuA, CuB, CuC)
 
-        D = Array(CuC)
+            D = Array(CuC)
 
-        for _ in 1:100
-            i = rand(1:M)
-            j = rand(1:N)
-            @test D[i, j] ≈ direct_maxmul(A, B, C, i, j)
+            @test check_all_maxmul(A, B, C, D)
         end
-    end
 
-    @testset "Int64 max mul" begin
-        
-        A = Int64(2) .* rand(Int64, M, K) .- Int64(1)
-        B = Int64(2) .* rand(Int64, K, N) .- Int64(1)
-        C = Int64(2) .* rand(Int64, M, N) .- Int64(1)
+        @testset "Int64 max mul" begin
+            A = abs.(rand(Int64, M, K) .% Int64(1000))
+            B = abs.(rand(Int64, K, N) .% Int64(1000))
+            C = abs.(rand(Int64, M, N) .% Int64(1000))
 
-        CuA = CuArray(A)
-        CuB = CuArray(B)
-        CuC = CuArray(C)
+            CuA = CuArray(A)
+            CuB = CuArray(B)
+            CuC = CuArray(C)
 
-        maxmul!(CuA, CuB, CuC)
+            maxmul!(CuA, CuB, CuC)
 
-        D = Array(CuC)
+            D = Array(CuC)
 
-        for _ in 1:100
-            i = rand(1:M)
-            j = rand(1:N)
-            @test D[i, j] ≈ direct_maxmul(A, B, C, i, j)
+            @test check_all_maxmul(A, B, C, D)
         end
     end
 end

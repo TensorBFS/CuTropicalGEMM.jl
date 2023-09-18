@@ -1,4 +1,4 @@
-CUDA_FILES := max_add.cu and_or.cu max_mul.cu min_add.cu gemm.cu
+CUDA_FILES := cuda/max_add.cu cuda/and_or.cu cuda/max_mul.cu cuda/mul_add.cu
 TARGET := TropicalGemmC.so
 DEPENDENCIES := $(CUDA_FILES)
 NVCC := nvcc

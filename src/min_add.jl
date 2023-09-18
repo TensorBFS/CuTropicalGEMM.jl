@@ -1,57 +1,13 @@
 export minadd!
 
-function minadd!(A::CuArray{T}, B::CuArray{T}, C::CuArray{T}) where{T <: Float32}
-    size_A = size(A)
-    size_B = size(B)
-    size_C = size(C)
+function minadd!(A::CuArray{T, 2}, B::CuArray{T, 2}, C::CuArray{T, 2}) where{T <: Number}
+    Ar = - A
+    Br = - B
+    Cr = - C
 
-    @assert size_A[1] == size_C[1]
-    @assert size_A[2] == size_B[1]
-    @assert size_B[2] == size_C[2]
+    maxadd!(Ar, Br, Cr)
 
-    @ccall libtropicalgemm.FP32_minadd(size_A[1]::Cint, size_C[2]::Cint, size_A[2]::Cint, pointer(A)::CuPtr{Cfloat}, pointer(B)::CuPtr{Cfloat}, pointer(C)::CuPtr{Cfloat})::Cvoid
-
-    return nothing
-end
-
-function minadd!(A::CuArray{T}, B::CuArray{T}, C::CuArray{T}) where{T <: Float64}
-    size_A = size(A)
-    size_B = size(B)
-    size_C = size(C)
-
-    @assert size_A[1] == size_C[1]
-    @assert size_A[2] == size_B[1]
-    @assert size_B[2] == size_C[2]
-
-    @ccall libtropicalgemm.FP64_minadd(size_A[1]::Cint, size_C[2]::Cint, size_A[2]::Cint, pointer(A)::CuPtr{Cdouble}, pointer(B)::CuPtr{Cdouble}, pointer(C)::CuPtr{Cdouble})::Cvoid
-
-    return nothing
-end
-
-function minadd!(A::CuArray{T}, B::CuArray{T}, C::CuArray{T}) where{T <: Int32}
-    size_A = size(A)
-    size_B = size(B)
-    size_C = size(C)
-
-    @assert size_A[1] == size_C[1]
-    @assert size_A[2] == size_B[1]
-    @assert size_B[2] == size_C[2]
-
-    @ccall libtropicalgemm.INT32_minadd(size_A[1]::Cint, size_C[2]::Cint, size_A[2]::Cint, pointer(A)::CuPtr{Cint}, pointer(B)::CuPtr{Cint}, pointer(C)::CuPtr{Cint})::Cvoid
-
-    return nothing
-end
-
-function minadd!(A::CuArray{T}, B::CuArray{T}, C::CuArray{T}) where{T <: Int64}
-    size_A = size(A)
-    size_B = size(B)
-    size_C = size(C)
-
-    @assert size_A[1] == size_C[1]
-    @assert size_A[2] == size_B[1]
-    @assert size_B[2] == size_C[2]
-
-    @ccall libtropicalgemm.INT64_minadd(size_A[1]::Cint, size_C[2]::Cint, size_A[2]::Cint, pointer(A)::CuPtr{Clong}, pointer(B)::CuPtr{Clong}, pointer(C)::CuPtr{Clong})::Cvoid
+    copyto!(C, - Cr)
 
     return nothing
 end
