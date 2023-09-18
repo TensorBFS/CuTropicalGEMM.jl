@@ -38,7 +38,8 @@ function check_all_andor(A::Matrix{T}, B::Matrix{T}, C::Matrix{T}, D::Matrix{T})
 end
 
 @testset "Testing Matrix And Or" begin
-    for (M, N, K) in [(5, 6, 7), (101, 102, 103), (1024, 1024, 1024)]
+    kernel = kernel_andor()
+    for (M, N, K) in [(0, 0, 0), (2, 0, 0), (2, 2, 0), (5, 6, 7), (101, 102, 103), (1024, 1024, 1024)]
         A = rand(Bool, M, K)
         B = rand(Bool, K, N)
         C = rand(Bool, M, N)
@@ -47,7 +48,7 @@ end
         CuB = CuArray(B)
         CuC = CuArray(C)
 
-        andor!(CuA, CuB, CuC)
+        matmul!(CuA, CuB, CuC, kernel)
 
         D = Array(CuC)
 

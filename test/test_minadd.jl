@@ -35,7 +35,8 @@ function check_all_minadd(A::Matrix{T}, B::Matrix{T}, C::Matrix{T}, D::Matrix{T}
 end
 
 @testset "Testing Matrix Min Add" begin
-    for (M, N, K) in [(5, 6, 7), (101, 102, 103), (1024, 1024, 1024)]
+    kernel = kernel_minadd()
+    for (M, N, K) in [(0, 0, 0), (2, 0, 0), (2, 2, 0), (5, 6, 7), (101, 102, 103), (1024, 1024, 1024)]
         @testset "Float32 min add" begin 
             A = 2f0 .* rand(Float32, M, K) .- 1f0
             B = 2f0 .* rand(Float32, K, N) .- 1f0
@@ -45,7 +46,7 @@ end
             CuB = CuArray(B)
             CuC = CuArray(C)
 
-            minadd!(CuA, CuB, CuC)
+            matmul!(CuA, CuB, CuC, kernel)
 
             D = Array(CuC)
 
@@ -61,7 +62,7 @@ end
             CuB = CuArray(B)
             CuC = CuArray(C)
 
-            minadd!(CuA, CuB, CuC)
+            matmul!(CuA, CuB, CuC, kernel)
 
             D = Array(CuC)
 

@@ -13,7 +13,8 @@ end
 
 @testset "Testing Matrix mul add" begin
 
-    for (M, N, K) in [(5, 6, 7), (101, 102, 103), (1024, 1024, 1024)]
+    kernel = kernel_muladd()
+    for (M, N, K) in [(0, 0, 0), (2, 0, 0), (2, 2, 0), (5, 6, 7), (101, 102, 103), (1024, 1024, 1024)]
         @testset "Float32 mul add" begin 
             A = 2f0 .* rand(Float32, M, K) .- 1f0
             B = 2f0 .* rand(Float32, K, N) .- 1f0
@@ -23,12 +24,12 @@ end
             CuB = CuArray(B)
             CuC = CuArray(C)
 
-            muladd!(CuA, CuB, CuC)
+            matmul!(CuA, CuB, CuC, kernel)
 
             D = Array(CuC)
 
-            # @test D ≈ C + A * B
-            @test D[M, N] ≈ direct_mutadd(A, B, C, M, N)
+            @test D ≈ C + A * B
+            # @test D[M, N] ≈ direct_mutadd(A, B, C, M, N)
         end
 
         @testset "Float64 mul add" begin
@@ -40,12 +41,12 @@ end
             CuB = CuArray(B)
             CuC = CuArray(C)
 
-            muladd!(CuA, CuB, CuC)
+            matmul!(CuA, CuB, CuC, kernel)
 
             D = Array(CuC)
 
-            # @test D ≈ C + A * B
-            @test D[M, N] ≈ direct_mutadd(A, B, C, M, N)
+            @test D ≈ C + A * B
+            # @test D[M, N] ≈ direct_mutadd(A, B, C, M, N)
         end
 
         @testset "Int32 mul add" begin
@@ -57,12 +58,12 @@ end
             CuB = CuArray(B)
             CuC = CuArray(C)
 
-            muladd!(CuA, CuB, CuC)
+            matmul!(CuA, CuB, CuC, kernel)
 
             D = Array(CuC)
 
-            # @test D ≈ C + A * B
-            @test D[M, N] ≈ direct_mutadd(A, B, C, M, N)
+            @test D ≈ C + A * B
+            # @test D[M, N] ≈ direct_mutadd(A, B, C, M, N)
         end
 
         @testset "Int64 mul add" begin
@@ -74,12 +75,12 @@ end
             CuB = CuArray(B)
             CuC = CuArray(C)
 
-            muladd!(CuA, CuB, CuC)
+            matmul!(CuA, CuB, CuC, kernel)
 
             D = Array(CuC)
 
-            # @test D ≈ C + A * B
-            @test D[M, N] ≈ direct_mutadd(A, B, C, M, N)
+            @test D ≈ C + A * B
+            # @test D[M, N] ≈ direct_mutadd(A, B, C, M, N)
         end
     end
 end

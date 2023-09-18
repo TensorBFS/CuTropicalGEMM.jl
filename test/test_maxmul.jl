@@ -35,7 +35,8 @@ function check_all_maxmul(A::Matrix{T}, B::Matrix{T}, C::Matrix{T}, D::Matrix{T}
 end
 
 @testset "Testing Matrix max mul" begin
-    for (M, N, K) in [(5, 6, 7), (101, 102, 103), (1024, 1024, 1024)]
+    kernel = kernel_maxmul()
+    for (M, N, K) in [(0, 0, 0), (2, 0, 0), (2, 2, 0), (5, 6, 7), (101, 102, 103), (1024, 1024, 1024)]
         @testset "Float32 max mul" begin 
             A = 2f0 .* rand(Float32, M, K)
             B = 2f0 .* rand(Float32, K, N)
@@ -45,7 +46,7 @@ end
             CuB = CuArray(B)
             CuC = CuArray(C)
 
-            maxmul!(CuA, CuB, CuC)
+            matmul!(CuA, CuB, CuC, kernel)
 
             D = Array(CuC)
 
@@ -61,7 +62,7 @@ end
             CuB = CuArray(B)
             CuC = CuArray(C)
 
-            maxmul!(CuA, CuB, CuC)
+            matmul!(CuA, CuB, CuC, kernel)
 
             D = Array(CuC)
 
@@ -77,7 +78,7 @@ end
             CuB = CuArray(B)
             CuC = CuArray(C)
 
-            maxmul!(CuA, CuB, CuC)
+            matmul!(CuA, CuB, CuC, kernel)
 
             D = Array(CuC)
 
@@ -93,7 +94,7 @@ end
             CuB = CuArray(B)
             CuC = CuArray(C)
 
-            maxmul!(CuA, CuB, CuC)
+            matmul!(CuA, CuB, CuC, kernel)
 
             D = Array(CuC)
 

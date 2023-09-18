@@ -22,7 +22,7 @@ template <
     const int THREAD_SIZE_Y, // height of block of C that each thread calculate
     const int THREAD_SIZE_X
     > 
-__global__ void FP32_mutadd_kernel( 
+__global__ void FP32_muladd_kernel( 
     float * __restrict__ A,
     float * __restrict__ B,
     float * __restrict__ C, 
@@ -140,7 +140,7 @@ template <
     const int THREAD_SIZE_Y, // height of block of C that each thread calculate
     const int THREAD_SIZE_X
     > 
-__global__ void FP64_mutadd_kernel( 
+__global__ void FP64_muladd_kernel( 
     double * __restrict__ A,
     double * __restrict__ B,
     double * __restrict__ C, 
@@ -258,7 +258,7 @@ template <
     const int THREAD_SIZE_Y, // height of block of C that each thread calculate
     const int THREAD_SIZE_X
     > 
-__global__ void INT32_mutadd_kernel( 
+__global__ void INT32_muladd_kernel( 
     int * __restrict__ A,
     int * __restrict__ B,
     int * __restrict__ C, 
@@ -376,7 +376,7 @@ template <
     const int THREAD_SIZE_Y, // height of block of C that each thread calculate
     const int THREAD_SIZE_X
     > 
-__global__ void INT64_mutadd_kernel( 
+__global__ void INT64_muladd_kernel( 
     long * __restrict__ A,
     long * __restrict__ B,
     long * __restrict__ C, 
@@ -488,7 +488,7 @@ __global__ void INT64_mutadd_kernel(
 }
 
 extern "C"
-void FP32_mutadd(const int M, const int N, const int K, float *d_A, float *d_B, float *d_C){
+void FP32_muladd(const int M, const int N, const int K, float *d_A, float *d_B, float *d_C){
 
     const int BLOCK_SIZE_M = 96;
     const int BLOCK_SIZE_K = 32;
@@ -503,13 +503,13 @@ void FP32_mutadd(const int M, const int N, const int K, float *d_A, float *d_B, 
     if (M % BLOCK_SIZE_M != 0)
         dimGrid.y++;
 
-    FP32_mutadd_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X> 
+    FP32_muladd_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X> 
         <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, M, N, K);
 
 }
 
 extern "C"
-void FP64_mutadd(const int M, const int N, const int K, double *d_A, double *d_B, double *d_C){
+void FP64_muladd(const int M, const int N, const int K, double *d_A, double *d_B, double *d_C){
 
     const int BLOCK_SIZE_M = 96;
     const int BLOCK_SIZE_K = 32;
@@ -524,13 +524,13 @@ void FP64_mutadd(const int M, const int N, const int K, double *d_A, double *d_B
     if (M % BLOCK_SIZE_M != 0)
         dimGrid.y++;
 
-    FP64_mutadd_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X> 
+    FP64_muladd_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X> 
         <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, M, N, K);
 
 }
 
 extern "C"
-void INT32_mutadd(const int M, const int N, const int K, int *d_A, int *d_B, int *d_C){
+void INT32_muladd(const int M, const int N, const int K, int *d_A, int *d_B, int *d_C){
 
     const int BLOCK_SIZE_M = 96;
     const int BLOCK_SIZE_K = 32;
@@ -545,13 +545,13 @@ void INT32_mutadd(const int M, const int N, const int K, int *d_A, int *d_B, int
     if (M % BLOCK_SIZE_M != 0)
         dimGrid.y++;
 
-    INT32_mutadd_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X> 
+    INT32_muladd_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X> 
         <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, M, N, K);
 
 }
 
 extern "C"
-void INT64_mutadd(const int M, const int N, const int K, long *d_A, long *d_B, long *d_C){
+void INT64_muladd(const int M, const int N, const int K, long *d_A, long *d_B, long *d_C){
 
     const int BLOCK_SIZE_M = 96;
     const int BLOCK_SIZE_K = 32;
@@ -566,7 +566,7 @@ void INT64_mutadd(const int M, const int N, const int K, long *d_A, long *d_B, l
     if (M % BLOCK_SIZE_M != 0)
         dimGrid.y++;
 
-    INT64_mutadd_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X> 
+    INT64_muladd_kernel<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_Y, THREAD_SIZE_X> 
         <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, M, N, K);
 
 }
