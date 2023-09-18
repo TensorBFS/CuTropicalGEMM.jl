@@ -5,7 +5,7 @@ using CUDA
 path = @__DIR__
 const libtropicalgemm = joinpath(path, "../deps", "TropicalGemmC.so")
 
-include("cugemm.jl")
+include("matmul.jl")
 
 include("mul_add.jl")
 
