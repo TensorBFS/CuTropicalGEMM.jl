@@ -9,4 +9,4 @@ Artifact
 *.out
 *.log
 build
-./deps/build.log
+deps/build.log
