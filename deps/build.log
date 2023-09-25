@@ -1,1 +1,31 @@
 nvcc	-Xcompiler	-fPIC	-shared	-o	TropicalGemmC.so	cuda/max_add.cu cuda/and_or.cu cuda/max_mul.cu cuda/mul_add.cu
+cuda/mul_add.cu(512): error: more than one instance of overloaded function "muladd" has "C" linkage
+  void muladd(const int M, const int N, const int K, double *d_A, double *d_B, double *d_C){
+       ^
+
+cuda/mul_add.cu(533): error: more than one instance of overloaded function "muladd" has "C" linkage
+  void muladd(const int M, const int N, const int K, int *d_A, int *d_B, int *d_C){
+       ^
+
+cuda/mul_add.cu(554): error: more than one instance of overloaded function "muladd" has "C" linkage
+  void muladd(const int M, const int N, const int K, long *d_A, long *d_B, long *d_C){
+       ^
+
+3 errors detected in the compilation of "cuda/mul_add.cu".
+make: *** [Makefile:11: TropicalGemmC.so] Error 2
+ERROR: LoadError: failed process: Process(`make`, ProcessExited(2)) [2]
+
+Stacktrace:
+ [1] pipeline_error
+   @ ./process.jl:565 [inlined]
+ [2] run(::Cmd; wait::Bool)
+   @ Base ./process.jl:480
+ [3] run(::Cmd)
+   @ Base ./process.jl:477
+ [4] top-level scope
+   @ ~/code/CuTropicalGEMM.jl/deps/build.jl:1
+ [5] include(fname::String)
+   @ Base.MainInclude ./client.jl:478
+ [6] top-level scope
+   @ none:5
+in expression starting at /home/xuanzhaogao/code/CuTropicalGEMM.jl/deps/build.jl:1
