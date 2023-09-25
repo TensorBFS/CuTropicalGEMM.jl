@@ -3,7 +3,7 @@ rm -rf build
 
 mkdir build
 
-folder_path="./cuda" # 你的脚本文件夹路径
+folder_path="./cuda" 
 
 cd "$folder_path"
 

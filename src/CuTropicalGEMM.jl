@@ -1,20 +1,12 @@
 module CuTropicalGEMM
 
-using CUDA
+using CUDA, TropicalNumbers, LinearAlgebra
+export matmul!
 
 path = @__DIR__
-const libtropicalgemm = joinpath(path, "../deps", "TropicalGemmC.so")
+const lib = joinpath(path, "../deps", "TropicalGemmC.so")
+const CTranspose{T} = Transpose{T, <:StridedCuVecOrMat{T}}
 
-include("matmul.jl")
-
-include("mul_add.jl")
-
-include("max_add.jl")
-include("min_add.jl")
-
-include("max_mul.jl")
-include("min_mul.jl")
-
-include("and_or.jl")
+include("tropical_gemms.jl")
 
 end
