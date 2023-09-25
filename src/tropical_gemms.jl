@@ -13,8 +13,8 @@ function dims_match(A::T1, B::T2, C::T3) where{T1, T2, T3}
     return MA, NB, KA
 end
 
-for (TA, CTA, tA) in [(:CuMatrix, :CuMatrix, 'N'), (:CTranspose, :(Transpose{<:Any, <:StridedCuVecOrMat}), 'T')]
-    for (TB, CTB, tB) in [(:CuMatrix, :CuMatrix, 'N'), (:CTranspose, :(Transpose{<:Any, <:StridedCuVecOrMat}), 'T')]
+for (TA, tA) in [(:CuMatrix, 'N'), (:CTranspose, 'T')]
+    for (TB, tB) in [(:CuMatrix, 'N'), (:CTranspose, 'T')]
         for (TT, CT, funcname) in [
             (:Float32, :Cfloat, :FP32_plusmul), (:Float64, :Cdouble, :FP64_plusmul), (:Int32, :Cint, :INT32_plusmul), (:Int64, :Clong, :INT64_plusmul), 
             (:TropicalAndOr, :Bool, :Bool_andor), 
@@ -38,7 +38,7 @@ for TA in [:CuMatrix, :CTranspose]
     for TB in [:CuMatrix, :CTranspose]
         @eval function LinearAlgebra.mul!(C::CuMatrix{T}, A::$TA{T}, B::$TB{T}) where {T}
             matmul!(A, B, C)
-            return nothing
+            return C
         end
     end
 end
