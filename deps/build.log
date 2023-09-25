@@ -1,0 +1,1 @@
+nvcc	-Xcompiler	-fPIC	-shared	-o	TropicalGemmC.so	cuda/max_add.cu cuda/and_or.cu cuda/max_mul.cu cuda/mul_add.cu
