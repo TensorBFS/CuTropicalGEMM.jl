@@ -34,11 +34,7 @@
                 
                                 hC .= α .* hA * hB .+ β .* hC
 
-                                if MT <: TropicalAndOr
-                                    @test Array(C) == hC
-                                else
-                                    @test Array(C) ≈ hC
-                                end
+                                @test Array(C) ≈ hC
                             end
                         end
                     end
@@ -59,12 +55,10 @@ end
                     @testset "$testname" begin
                         if !(size(A) == (1,4) && size(B) == (4,))
                             res0 = Array(A) * Array(B)
-                            res1 = LinearAlgebra.mul!(MT.(CUDA.zeros(T, size(res0)...)), A, B)
-                            if MT == TropicalAndOr
-                                @test Array(res1) == res0
-                            else
-                                @test Array(res1) ≈ res0
-                            end
+                            res1 = A * B
+                            res2 = LinearAlgebra.mul!(MT.(CUDA.zeros(T, size(res0)...)), A, B)
+                            @test Array(res1) ≈ res0
+                            @test Array(res2) ≈ res0
                         end
                     end
                 end
