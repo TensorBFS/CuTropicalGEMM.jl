@@ -22,7 +22,7 @@ for (TA, tA) in [(:CuVecOrMat, 'N'), (:CTranspose, 'T')]
             @eval function matmul!(A::$TA{T}, B::$TB{T}, C::CuMatrix{T}, α::T, β::T) where {T<:$TT}
                 M, N, K = dims_match(A, B, C)
                 if M * N * K == 0
-                    return β .* C
+                    return rmul!(C, β)
                 else
                     @ccall $lib.$funcname(M::Cint, N::Cint, K::Cint, pointer(parent(A))::CuPtr{$CT}, pointer(parent(B))::CuPtr{$CT}, pointer(C)::CuPtr{$CT}, content(α)::$CT, content(β)::$CT, $tA::Cchar, $tB::Cchar)::Cvoid
                 end
@@ -32,12 +32,20 @@ for (TA, tA) in [(:CuVecOrMat, 'N'), (:CTranspose, 'T')]
     end
 end
 
+const CuTropicalBlasTypes = Union{TropicalAndOr, TropicalMaxPlusF32, TropicalMaxPlusF64, TropicalMaxMulF32, TropicalMaxMulF64, TropicalMaxMulI32, TropicalMaxMulI64}
+
 # overload the LinearAlgebra.mul!
 for TA in [:CuVecOrMat, :CTranspose]
     for TB in [:CuVecOrMat, :CTranspose]
-        @eval function LinearAlgebra.mul!(C::CuMatrix{T}, A::$TA{T}, B::$TB{T}, α::T, β::T) where {T <: Union{Float32, Float64, Int32, Int64, TropicalAndOr, TropicalMaxPlusF32, TropicalMaxPlusF64, TropicalMaxMulF32, TropicalMaxMulF64, TropicalMaxMulI32, TropicalMaxMulI64}}
+        @eval function LinearAlgebra.mul!(C::CuMatrix{T}, A::$TA{T}, B::$TB{T}, α::Number, β::Number) where {T <: CuTropicalBlasTypes}
+            α = _convert(T, α)
+            β = _convert(T, β)
             C = matmul!(A, B, C, α, β)
             return C
         end
     end
+end
+for TT in [:TropicalMaxMul, :TropicalMaxPlus, :TropicalAndOr, :TropicalMinPlus]
+    @eval _convert(::Type{T}, x::$TT) where T<:$TT = T(x)
+    @eval _convert(::Type{T}, x::Number) where T<:$TT = iszero(x) ? zero(T) : (isone(x) ? one(T) : error("Converting from number type `$(typeof(x))` to `$T` is unsafe!"))
 end

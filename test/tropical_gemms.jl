@@ -30,7 +30,7 @@
                                 hB = Array(B)
                                 hC = Array(C)
 
-                                C = LinearAlgebra.mul!(C, A, B, α, β)
+                                C = CuTropicalGEMM.matmul!(A, B, C, α, β)
                 
                                 hC .= α .* hA * hB .+ β .* hC
 
