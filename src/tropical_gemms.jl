@@ -19,7 +19,7 @@ for (TA, tA) in [(:CuVecOrMat, 'N'), (:CTranspose, 'T')]
             (:TropicalMaxPlusF32, :Cfloat, :FLOAT_maxplus, :lib_TropicalMaxPlus_FP32), (:TropicalMaxPlusF64, :Cdouble, :DOUBLE_maxplus, :lib_TropicalMaxPlus_FP64), 
             (:TropicalMaxMulF32, :Cfloat, :FLOAT_maxmul, :lib_TropicalMaxMul_FP32), (:TropicalMaxMulF64, :Cdouble, :DOUBLE_maxmul, :lib_TropicalMaxMul_FP64), (:TropicalMaxMulI32, :Cint, :INT_maxmul, :lib_TropicalMaxMul_INT32), (:TropicalMaxMulI64, :Clong, :LONG_maxmul, :lib_TropicalMaxMul_INT64)
             ]
-            @eval function matmul!(A::$TA{T}, B::$TB{T}, C::CuMatrix{T}, α::T, β::T) where {T<:$TT}
+            @eval function matmul!(A::$TA{T}, B::$TB{T}, C::CuVecOrMat{T}, α::T, β::T) where {T<:$TT}
                 M, N, K = dims_match(A, B, C)
                 if M * N * K == 0
                     return rmul!(C, β)
@@ -37,7 +37,8 @@ const CuTropicalBlasTypes = Union{TropicalAndOr, TropicalMaxPlusF32, TropicalMax
 # overload the LinearAlgebra.mul!
 for TA in [:CuVecOrMat, :CTranspose]
     for TB in [:CuVecOrMat, :CTranspose]
-        @eval function LinearAlgebra.mul!(C::CuMatrix{T}, A::$TA{T}, B::$TB{T}, α::Number, β::Number) where {T <: CuTropicalBlasTypes}
+        @eval function LinearAlgebra.mul!(C::CuVecOrMat{T}, A::$TA{T}, B::$TB{T}, α::Number, β::Number) where {T <: CuTropicalBlasTypes}
+            @show "!"
             α = _convert(T, α)
             β = _convert(T, β)
             C = matmul!(A, B, C, α, β)
