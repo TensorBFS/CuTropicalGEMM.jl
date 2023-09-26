@@ -38,7 +38,6 @@ const CuTropicalBlasTypes = Union{TropicalAndOr, TropicalMaxPlusF32, TropicalMax
 for TA in [:CuVecOrMat, :CTranspose]
     for TB in [:CuVecOrMat, :CTranspose]
         @eval function LinearAlgebra.mul!(C::CuVecOrMat{T}, A::$TA{T}, B::$TB{T}, α::Number, β::Number) where {T <: CuTropicalBlasTypes}
-            @show "!"
             α = _convert(T, α)
             β = _convert(T, β)
             C = matmul!(A, B, C, α, β)
