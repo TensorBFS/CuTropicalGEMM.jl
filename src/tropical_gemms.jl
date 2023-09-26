@@ -39,9 +39,5 @@ for TA in [:CuVecOrMat, :CTranspose]
             C = matmul!(A, B, C, α, β)
             return C
         end
-        @eval function LinearAlgebra.mul!(C::CuMatrix{T}, A::$TA{T}, B::$TB{T}) where {T <: Union{Float32, Float64, Int32, Int64, TropicalAndOr, TropicalMaxPlusF32, TropicalMaxPlusF64, TropicalMaxMulF32, TropicalMaxMulF64, TropicalMaxMulI32, TropicalMaxMulI64}}
-            C = matmul!(A, B, C, one(T), zero(T))
-            return C
-        end
     end
 end
