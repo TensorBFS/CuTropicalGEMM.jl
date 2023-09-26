@@ -11,20 +11,77 @@
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 
+#define CONCATENATE_(x, y) x##y
+#define CONCATENATETHREE_(x, y, z) x##y##z
+
+#define CONCATENATE(x, y) CONCATENATE_(x, y)
+#define CONCATENATETHREE(x, y, z) CONCATENATETHREE_(x, y, z)
+
 // The macro
 #define OFFSET_row(row, col, ld) ((row) * (ld) + (col))
 #define OFFSET_col(row, col, ld) ((col) * (ld) + (row))
 
+// The Tropical algebras
+#ifdef PlusMul
 #define OPERATOR_ADD(a, b) (a + b)
 #define OPERATOR_MUL(a, b) (a * b)
 #define PADDING 0
+#define FUNCNAME _plusmul
+#endif
 
+#ifdef TropicalAndOr
+#define OPERATOR_ADD(a, b) (a || b)
+#define OPERATOR_MUL(a, b) (a && b)
+#define PADDING false
+#define FUNCNAME _andor
+#endif
+
+#ifdef TropicalMaxMul
+#define OPERATOR_ADD(a, b) max(a, b)
+#define OPERATOR_MUL(a, b) (a * b)
+#define PADDING 0
+#define FUNCNAME _maxmul
+#endif
+
+#ifdef TropicalMaxPlus
+#define OPERATOR_ADD(a, b) max(a, b)
+#define OPERATOR_MUL(a, b) (a + b)
+#define PADDING -INFINITY
+#define FUNCNAME _maxplus
+#endif
+
+// Types
+
+#ifdef Bool
+#define TYPE bool
+#define TYPENAME BOOL
+#endif
+
+#ifdef FP32
+#define TYPE float
+#define TYPENAME FLOAT
+#endif
+
+#ifdef FP64
+#define TYPE double
+#define TYPENAME DOUBLE
+#endif
+
+#ifdef INT32
+#define TYPE int
+#define TYPENAME INT
+#endif
+
+#ifdef INT64
 #define TYPE long
-#define FUNCNAME INT64_plusmul
-#define kernel_TT INT64_plusmul_TT
-#define kernel_TN INT64_plusmul_TN
-#define kernel_NT INT64_plusmul_NT
-#define kernel_NN INT64_plusmul_NN
+#define TYPENAME LONG
+#endif
+
+
+#define TT _TT
+#define TN _TN
+#define NT _NT
+#define NN _NN
 
 template <
     const int BLOCK_SIZE_M,  // width of block of C that each thread block calculate
@@ -33,10 +90,12 @@ template <
     const int THREAD_SIZE_M, // height of block of C that each thread calculate
     const int THREAD_SIZE_N
     > 
-__global__ void kernel_TT( 
+__global__ void CONCATENATETHREE(TYPENAME, FUNCNAME, TT)( 
     TYPE * __restrict__ A,
     TYPE * __restrict__ B,
     TYPE * __restrict__ C, 
+    TYPE alpha,
+    TYPE beta,
     int M,
     int N,
     int K
@@ -148,10 +207,16 @@ __global__ void kernel_TT(
             const int col = BLOCK_SIZE_N * blockIdx.x + THREAD_SIZE_N * threadIdx.x + thread_x;
             if (blockIdx.x == gridDim.x -1 || blockIdx.y == gridDim.y - 1) {
                 if (row < M && col < N) {
-                    C[OFFSET_col(row, col, M)] = OPERATOR_ADD(C[OFFSET_col(row, col, M)], accum[OFFSET_row(thread_y, thread_x, THREAD_SIZE_N)]);
+                    C[OFFSET_col(row, col, M)] = OPERATOR_ADD(
+                        OPERATOR_MUL(C[OFFSET_col(row, col, M)], beta), 
+                        OPERATOR_MUL(accum[OFFSET_row(thread_y, thread_x, THREAD_SIZE_N)], alpha)
+                        );
                 }
             } else {
-                C[OFFSET_col(row, col, M)] = OPERATOR_ADD(C[OFFSET_col(row, col, M)], accum[OFFSET_row(thread_y, thread_x, THREAD_SIZE_N)]);
+                C[OFFSET_col(row, col, M)] = OPERATOR_ADD(
+                    OPERATOR_MUL(C[OFFSET_col(row, col, M)], beta), 
+                    OPERATOR_MUL(accum[OFFSET_row(thread_y, thread_x, THREAD_SIZE_N)], alpha)
+                    );
             }
         }
     }
@@ -164,10 +229,12 @@ template <
     const int THREAD_SIZE_M, // height of block of C that each thread calculate
     const int THREAD_SIZE_N
     > 
-__global__ void kernel_TN( 
+__global__ void CONCATENATETHREE(TYPENAME, FUNCNAME, TN)( 
     TYPE * __restrict__ A,
     TYPE * __restrict__ B,
     TYPE * __restrict__ C, 
+    TYPE alpha,
+    TYPE beta,
     int M,
     int N,
     int K
@@ -274,10 +341,16 @@ __global__ void kernel_TN(
             const int col = BLOCK_SIZE_N * blockIdx.x + THREAD_SIZE_N * threadIdx.x + thread_x;
             if (blockIdx.x == gridDim.x -1 || blockIdx.y == gridDim.y - 1) {
                 if (row < M && col < N) {
-                    C[OFFSET_col(row, col, M)] = OPERATOR_ADD(C[OFFSET_col(row, col, M)], accum[OFFSET_row(thread_y, thread_x, THREAD_SIZE_N)]);
+                    C[OFFSET_col(row, col, M)] = OPERATOR_ADD(
+                        OPERATOR_MUL(C[OFFSET_col(row, col, M)], beta), 
+                        OPERATOR_MUL(accum[OFFSET_row(thread_y, thread_x, THREAD_SIZE_N)], alpha)
+                        );
                 }
             } else {
-                C[OFFSET_col(row, col, M)] = OPERATOR_ADD(C[OFFSET_col(row, col, M)], accum[OFFSET_row(thread_y, thread_x, THREAD_SIZE_N)]);
+                C[OFFSET_col(row, col, M)] = OPERATOR_ADD(
+                        OPERATOR_MUL(C[OFFSET_col(row, col, M)], beta), 
+                        OPERATOR_MUL(accum[OFFSET_row(thread_y, thread_x, THREAD_SIZE_N)], alpha)
+                        );
             }
         }
     }
@@ -290,10 +363,12 @@ template <
     const int THREAD_SIZE_M, // height of block of C that each thread calculate
     const int THREAD_SIZE_N  // width of block of C that each thread calculate
     > 
-__global__ void kernel_NT( 
+__global__ void CONCATENATETHREE(TYPENAME, FUNCNAME, NT)( 
     TYPE * __restrict__ A,
     TYPE * __restrict__ B,
     TYPE * __restrict__ C,
+    TYPE alpha,
+    TYPE beta,
     int M,
     int N,
     int K
@@ -401,10 +476,16 @@ __global__ void kernel_NT(
             const int row = BLOCK_SIZE_M * blockIdx.x + THREAD_SIZE_M * threadIdx.x + thread_m;
             if (blockIdx.x == gridDim.x -1 || blockIdx.y == gridDim.y - 1) {
                 if (row < M && col < N) {
-                    C[OFFSET_col(row, col, M)] = OPERATOR_ADD(accum[OFFSET_col(thread_m, thread_n, THREAD_SIZE_M)], C[OFFSET_col(row, col, M)]);
+                    C[OFFSET_col(row, col, M)] = OPERATOR_ADD(
+                        OPERATOR_MUL(accum[OFFSET_col(thread_m, thread_n, THREAD_SIZE_M)], alpha), 
+                        OPERATOR_MUL(C[OFFSET_col(row, col, M)], beta)
+                        );
                 }
             } else {
-                C[OFFSET_col(row, col, M)] = OPERATOR_ADD(accum[OFFSET_col(thread_m, thread_n, THREAD_SIZE_M)], C[OFFSET_col(row, col, M)]);
+                C[OFFSET_col(row, col, M)] = OPERATOR_ADD(
+                        OPERATOR_MUL(accum[OFFSET_col(thread_m, thread_n, THREAD_SIZE_M)], alpha), 
+                        OPERATOR_MUL(C[OFFSET_col(row, col, M)], beta)
+                        );
             }
         }
     }
@@ -417,10 +498,12 @@ template <
     const int THREAD_SIZE_M, // height of block of C that each thread calculate
     const int THREAD_SIZE_N  // width of block of C that each thread calculate
     > 
-__global__ void kernel_NN( 
+__global__ void CONCATENATETHREE(TYPENAME, FUNCNAME, NN)( 
     TYPE * __restrict__ A,
     TYPE * __restrict__ B,
     TYPE * __restrict__ C,
+    TYPE alpha,
+    TYPE beta,
     int M,
     int N,
     int K
@@ -532,17 +615,23 @@ __global__ void kernel_NN(
 
             if (blockIdx.x == gridDim.x -1 || blockIdx.y == gridDim.y - 1) {
                 if (row < M && col < N) {
-                    C[OFFSET_col(row, col, M)] = OPERATOR_ADD(accum[OFFSET_col(thread_m, thread_n, THREAD_SIZE_M)], C[OFFSET_col(row, col, M)]);
+                    C[OFFSET_col(row, col, M)] = OPERATOR_ADD(
+                        OPERATOR_MUL(accum[OFFSET_col(thread_m, thread_n, THREAD_SIZE_M)], alpha), 
+                        OPERATOR_MUL(C[OFFSET_col(row, col, M)], beta)
+                        );
                 }
             } else {
-                C[OFFSET_col(row, col, M)] = OPERATOR_ADD(accum[OFFSET_col(thread_m, thread_n, THREAD_SIZE_M)], C[OFFSET_col(row, col, M)]);
+                C[OFFSET_col(row, col, M)] = OPERATOR_ADD(
+                    OPERATOR_MUL(accum[OFFSET_col(thread_m, thread_n, THREAD_SIZE_M)], alpha), 
+                    OPERATOR_MUL(C[OFFSET_col(row, col, M)], beta)
+                    );
             }
         }
     }
 }
 
-extern "C"
-void FUNCNAME(const int m, const int n, const int k, TYPE *d_A, TYPE *d_B, TYPE *d_C, const char TA, const char TB){
+extern "C"{
+void CONCATENATE(TYPENAME, FUNCNAME)(const int m, const int n, const int k, TYPE *d_A, TYPE *d_B, TYPE *d_C, TYPE alpha, TYPE beta, const char TA, const char TB){
     // TA and TB are 'T' or 'N'
 
     const char T = 'T';
@@ -562,8 +651,8 @@ void FUNCNAME(const int m, const int n, const int k, TYPE *d_A, TYPE *d_B, TYPE 
         if (m % BLOCK_SIZE_M != 0)
             dimGrid.y++;
 
-        kernel_TT<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N> 
-            <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, m, n, k);
+        CONCATENATETHREE(TYPENAME, FUNCNAME, TT)<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N> 
+            <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, alpha, beta, m, n, k);
     }
 
     if (TA == T && TB == N) {
@@ -574,8 +663,8 @@ void FUNCNAME(const int m, const int n, const int k, TYPE *d_A, TYPE *d_B, TYPE 
         if (m % BLOCK_SIZE_M != 0)
             dimGrid.y++;
             
-        kernel_TN<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N> 
-        <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, m, n, k);
+        CONCATENATETHREE(TYPENAME, FUNCNAME, TN)<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N> 
+        <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, alpha, beta, m, n, k);
     }
 
     if (TA == N && TB == T) {
@@ -586,8 +675,8 @@ void FUNCNAME(const int m, const int n, const int k, TYPE *d_A, TYPE *d_B, TYPE 
         if (n % BLOCK_SIZE_N != 0)
             dimGrid.y++;
 
-        kernel_NT<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N> 
-            <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, m, n, k);
+        CONCATENATETHREE(TYPENAME, FUNCNAME, NT)<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N> 
+            <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, alpha, beta, m, n, k);
     }
 
     if (TA == N && TB == N) {
@@ -598,8 +687,9 @@ void FUNCNAME(const int m, const int n, const int k, TYPE *d_A, TYPE *d_B, TYPE 
         if (n % BLOCK_SIZE_N != 0)
             dimGrid.y++;
 
-        kernel_NN<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N> 
-            <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, m, n, k);
+        CONCATENATETHREE(TYPENAME, FUNCNAME, NN)<BLOCK_SIZE_M, BLOCK_SIZE_K, BLOCK_SIZE_N, THREAD_SIZE_M, THREAD_SIZE_N> 
+            <<< dimGrid, dimBlock >>>(d_A, d_B, d_C, alpha, beta, m, n, k);
     }
 
+}
 }
