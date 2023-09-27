@@ -17,6 +17,7 @@ for (TA, tA) in [(:CuVecOrMat, 'N'), (:CTranspose, 'T')]
             (:Float32, :Cfloat, :FLOAT_plusmul, :lib_PlusMul_FP32), (:Float64, :Cdouble, :DOUBLE_plusmul, :lib_PlusMul_FP64), (:Int32, :Cint, :INT_plusmul, :lib_PlusMul_INT32), (:Int64, :Clong, :LONG_plusmul, :lib_PlusMul_INT64), 
             (:TropicalAndOr, :Bool, :BOOL_andor, :lib_TropicalAndOr_Bool), 
             (:TropicalMaxPlusF32, :Cfloat, :FLOAT_maxplus, :lib_TropicalMaxPlus_FP32), (:TropicalMaxPlusF64, :Cdouble, :DOUBLE_maxplus, :lib_TropicalMaxPlus_FP64), 
+            (:TropicalMinPlusF32, :Cfloat, :FLOAT_minplus, :lib_TropicalMinPlus_FP32), (:TropicalMinPlusF64, :Cdouble, :DOUBLE_minplus, :lib_TropicalMinPlus_FP64), 
             (:TropicalMaxMulF32, :Cfloat, :FLOAT_maxmul, :lib_TropicalMaxMul_FP32), (:TropicalMaxMulF64, :Cdouble, :DOUBLE_maxmul, :lib_TropicalMaxMul_FP64), (:TropicalMaxMulI32, :Cint, :INT_maxmul, :lib_TropicalMaxMul_INT32), (:TropicalMaxMulI64, :Clong, :LONG_maxmul, :lib_TropicalMaxMul_INT64)
             ]
             @eval function matmul!(C::CuVecOrMat{T}, A::$TA{T}, B::$TB{T}, α::T, β::T) where {T<:$TT}

@@ -1,6 +1,6 @@
 CUDA_FILES :=  tropicalgemm_kernels.cu
 
-MACRO_COMBINATIONS :=  PlusMul_FP32 PlusMul_FP64 PlusMul_INT32 PlusMul_INT64  TropicalAndOr_Bool   TropicalMaxMul_FP32   TropicalMaxMul_FP64   TropicalMaxMul_INT32  TropicalMaxMul_INT64 TropicalMaxPlus_FP32 TropicalMaxPlus_FP64
+MACRO_COMBINATIONS :=  PlusMul_FP32 PlusMul_FP64 PlusMul_INT32 PlusMul_INT64  TropicalAndOr_Bool   TropicalMaxMul_FP32   TropicalMaxMul_FP64   TropicalMaxMul_INT32  TropicalMaxMul_INT64 TropicalMaxPlus_FP32 TropicalMaxPlus_FP64 TropicalMinPlus_FP32 TropicalMinPlus_FP64
 
 LIBRARY_NAME	:=kernels.so
 

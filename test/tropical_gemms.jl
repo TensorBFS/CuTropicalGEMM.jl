@@ -1,5 +1,5 @@
 @testset "Testing the gemms" begin
-    for (MT, DT) in [(Real, [Float32, Float64, Int32, Int64]), (TropicalAndOr, [Bool]), (TropicalMaxPlus, [Float32, Float64]), (TropicalMaxMul, [Float32, Float64]), (TropicalMaxMul, [Int32, Int64])]
+    for (MT, DT) in [(Real, [Float32, Float64, Int32, Int64]), (TropicalAndOr, [Bool]), (TropicalMaxPlus, [Float32, Float64]), (TropicalMinPlus, [Float32, Float64]), (TropicalMaxMul, [Float32, Float64]), (TropicalMaxMul, [Int32, Int64])]
         for T in DT
             for (M, N, K) in [(0, 0, 0), (2, 0, 0), (2, 2, 0), (5, 6, 7), (101, 102, 103)]
                 if MT == Real
@@ -44,21 +44,23 @@
     end
 end
 
-@testset "cuda patch" begin
-    for (MT, DT) in [(Real, [Float32, Float64, Int32, Int64]), (TropicalAndOr, [Bool]), (TropicalMaxPlus, [Float32, Float64]), (TropicalMaxMul, [Float32, Float64])]
+@testset "cuda patch positive and negative" begin
+    for (MT, DT) in [(TropicalMaxPlus, [Float32, Float64]), (TropicalMinPlus, [Float32, Float64])]
         for T in DT
-            a = MT.(CUDA.rand(T, 4, 4))
-            b = MT.(CUDA.rand(T, 4))
-            for A in [transpose(a), a, transpose(b)]
-                for B in [transpose(a), a, b]
-                    testname = "Type " * string(T) * ", size: " * string(size(A)) * " " * string(size(B))
-                    @testset "$testname" begin
-                        if !(size(A) == (1,4) && size(B) == (4,))
-                            res0 = Array(A) * Array(B)
-                            res1 = A * B
-                            res2 = LinearAlgebra.mul!(MT.(CUDA.zeros(T, size(res0)...)), A, B)
-                            @test Array(res1) ≈ res0
-                            @test Array(res2) ≈ res0
+            for a in [MT.(CUDA.randn(T, 4, 4)), MT.( - CUDA.randn(T, 4, 4))]
+                for b in [MT.(CUDA.randn(T, 4)), MT.( - CUDA.randn(T, 4))]
+                    for A in [transpose(a), a, transpose(b)]
+                        for B in [transpose(a), a, b]
+                            testname = "Type " * string(T) * ", size: " * string(size(A)) * " " * string(size(B))
+                            @testset "$testname" begin
+                                if !(size(A) == (1,4) && size(B) == (4,))
+                                    res0 = Array(A) * Array(B)
+                                    res1 = A * B
+                                    res2 = LinearAlgebra.mul!(MT.(CUDA.zeros(T, size(res0)...)), A, B)
+                                    @test Array(res1) ≈ res0
+                                    @test Array(res2) ≈ res0
+                                end
+                            end
                         end
                     end
                 end
@@ -68,19 +70,20 @@ end
 end
 
 # test over negative values.
-@testset "cuda patch negative" begin
-    for T in [Tropical{Float64}]
-        a = T.(-CUDA.rand(4, 4))
-        b = T.(-CUDA.rand(4))
-        for A in [transpose(a), a, transpose(b)]
-            for B in [transpose(a), a, b]
-                if !(size(A) == (1,4) && size(B) == (4,))
-                    @info typeof(A), typeof(B)
-                    res0 = Array(A) * Array(B)
-                    res1 = A * B
-                    res2 = LinearAlgebra.mul!(CUDA.zeros(T, size(res0)...), A, B, true, false)
-                    @test Array(res1) ≈ res0
-                    @test Array(res2) ≈ res0
+@testset "cuda patch positive only" begin
+    for (MT, DT) in [(TropicalAndOr, [Bool]), (TropicalMaxMul, [Float32, Float64])]
+        for T in DT
+            a = MT.(CUDA.rand(T, 4, 4))
+            b = MT.(CUDA.rand(T, 4))
+            for A in [transpose(a), a, transpose(b)]
+                for B in [transpose(a), a, b]
+                    if !(size(A) == (1,4) && size(B) == (4,))
+                        res0 = Array(A) * Array(B)
+                        res1 = A * B
+                        res2 = LinearAlgebra.mul!(MT.(CUDA.zeros(T, size(res0)...)), A, B, true, false)
+                        @test Array(res1) ≈ res0
+                        @test Array(res2) ≈ res0
+                    end
                 end
             end
         end

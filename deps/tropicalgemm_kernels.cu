@@ -50,6 +50,13 @@
 #define FUNCNAME _maxplus
 #endif
 
+#ifdef TropicalMinPlus
+#define OPERATOR_ADD(a, b) min(a, b)
+#define OPERATOR_MUL(a, b) (a + b)
+#define PADDING INFINITY
+#define FUNCNAME _minplus
+#endif
+
 // Types
 
 #ifdef Bool
@@ -114,9 +121,18 @@ __global__ void CONCATENATETHREE(TYPENAME, FUNCNAME, TT)(
     __shared__ TYPE As[BLOCK_SIZE_M * BLOCK_SIZE_K]; // avoid bank conflict
     __shared__ TYPE Bs[BLOCK_SIZE_K * BLOCK_SIZE_N];
     // registers for C
-    TYPE accum[THREAD_SIZE_M * THREAD_SIZE_N] = {PADDING};
+    TYPE accum[THREAD_SIZE_M * THREAD_SIZE_N] = {0};
     TYPE regs_a[THREAD_SIZE_M] = {0};
     TYPE regs_b[THREAD_SIZE_N] = {0};
+
+    // init the accum as tropical zero
+    #pragma unroll
+    for (int thread_y = 0; thread_y < THREAD_SIZE_M; ++thread_y) {
+        #pragma unroll
+        for (int thread_x = 0; thread_x < THREAD_SIZE_N; ++thread_x) {
+            accum[OFFSET_row(thread_y, thread_x, THREAD_SIZE_N)] = PADDING;
+        }
+    }
     
     // row number and col number that needs to be loaded blockIdx.y this thread
     const int A_TILE_ROW = tid / BLOCK_SIZE_K;
@@ -254,9 +270,17 @@ __global__ void CONCATENATETHREE(TYPENAME, FUNCNAME, TN)(
     __shared__ TYPE As[BLOCK_SIZE_M * BLOCK_SIZE_K]; // avoid bank conflict
     __shared__ TYPE Bs[BLOCK_SIZE_K * BLOCK_SIZE_N];
     // registers for C
-    TYPE accum[THREAD_SIZE_M * THREAD_SIZE_N] = {PADDING};
+    TYPE accum[THREAD_SIZE_M * THREAD_SIZE_N] = {0};
     TYPE regs_a[THREAD_SIZE_M] = {0};
     TYPE regs_b[THREAD_SIZE_N] = {0};
+
+    #pragma unroll
+    for (int thread_y = 0; thread_y < THREAD_SIZE_M; ++thread_y) {
+        #pragma unroll
+        for (int thread_x = 0; thread_x < THREAD_SIZE_N; ++thread_x) {
+            accum[OFFSET_row(thread_y, thread_x, THREAD_SIZE_N)] = PADDING;
+        }
+    }
     
     // row number and col number that needs to be loaded blockIdx.y this thread
     const int A_TILE_ROW = tid_A / BLOCK_SIZE_K;
@@ -392,9 +416,17 @@ __global__ void CONCATENATETHREE(TYPENAME, FUNCNAME, NT)(
     __shared__ TYPE Bs[BLOCK_SIZE_KN];
 
     // registers for C
-    TYPE accum[THREAD_SIZE_MN] = {PADDING};
+    TYPE accum[THREAD_SIZE_MN] = {0};
     TYPE regs_a[THREAD_SIZE_M] = {0};
     TYPE regs_b[THREAD_SIZE_N] = {0};
+
+    #pragma unroll
+    for (int thread_m = 0; thread_m < THREAD_SIZE_M; ++thread_m) {
+        #pragma unroll
+        for (int thread_n = 0; thread_n < THREAD_SIZE_N; ++thread_n) {
+            accum[OFFSET_col(thread_m, thread_n, THREAD_SIZE_M)] = PADDING;
+        }
+    }
     
     // row number and col number that needs to be loaded blockIdx.y this thread
     const int A_TILE_COL = tid / BLOCK_SIZE_M;
@@ -527,9 +559,17 @@ __global__ void CONCATENATETHREE(TYPENAME, FUNCNAME, NN)(
     __shared__ TYPE Bs[BLOCK_SIZE_KN];
 
     // registers for C
-    TYPE accum[THREAD_SIZE_MN] = {PADDING};
+    TYPE accum[THREAD_SIZE_MN] = {0};
     TYPE regs_a[THREAD_SIZE_M] = {0};
     TYPE regs_b[THREAD_SIZE_N] = {0};
+
+    #pragma unroll
+    for (int thread_m = 0; thread_m < THREAD_SIZE_M; ++thread_m) {
+        #pragma unroll
+        for (int thread_n = 0; thread_n < THREAD_SIZE_N; ++thread_n) {
+            accum[OFFSET_col(thread_m, thread_n, THREAD_SIZE_M)] = PADDING;
+        }
+    }
     
     // row number and col number that needs to be loaded blockIdx.y this thread
     const int A_TILE_COL = tid / BLOCK_SIZE_M;
