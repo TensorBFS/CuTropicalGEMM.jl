@@ -236,6 +236,7 @@ __global__ void CONCATENATETHREE(TYPENAME, FUNCNAME, TT)(
             }
         }
     }
+    __syncthreads();
 }
 
 template <
@@ -378,6 +379,7 @@ __global__ void CONCATENATETHREE(TYPENAME, FUNCNAME, TN)(
             }
         }
     }
+    __syncthreads();
 }
 
 template <
@@ -521,6 +523,7 @@ __global__ void CONCATENATETHREE(TYPENAME, FUNCNAME, NT)(
             }
         }
     }
+    __syncthreads();
 }
 
 template <
@@ -668,6 +671,7 @@ __global__ void CONCATENATETHREE(TYPENAME, FUNCNAME, NN)(
             }
         }
     }
+    __syncthreads();
 }
 
 extern "C"{
