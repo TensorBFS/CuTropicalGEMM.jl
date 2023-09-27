@@ -9,7 +9,7 @@ $(LIBRARY_NAME):	$(foreach	MACROS,	$(MACRO_COMBINATIONS),	$(CUDA_FILES))
 	@for	MACROS	in	$(MACRO_COMBINATIONS);	do	\
 	MACRO_1=$$(echo	$$MACROS	|	cut	-d'_'	-f1);	\
 	MACRO_2=$$(echo	$$MACROS	|	cut	-d'_'	-f2);	\
-	nvcc	-arch=sm_80	-Xcompiler	-fPIC	-shared	-D$$MACRO_1	-D$$MACRO_2	$(CUDA_FILES)	-o	./lib/lib_$$MACROS.so;	\
+	nvcc	-Xcompiler	-fPIC	-shared	-D$$MACRO_1	-D$$MACRO_2	$(CUDA_FILES)	-o	./lib/lib_$$MACROS.so;	\
     done
 
 clean:
