@@ -1,7 +1,6 @@
 # CuTropicalGEMM
 
-[![Build Status](https://github.com/ArrogantGao/CuTropicalGEMM.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/ArrogantGao/CuTropicalGEMM.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![Build Status](https://travis-ci.com/ArrogantGao/CuTropicalGEMM.jl.svg?branch=main)](https://travis-ci.com/ArrogantGao/CuTropicalGEMM.jl)
+[![Build status](https://badge.buildkite.com/06c24dc7b1a9d7c38897acd21575ffd678ee03de190c0b8d81.svg)](https://buildkite.com/julialang/cutropicalgemm-dot-jl)
 [![Coverage](https://codecov.io/gh/ArrogantGao/CuTropicalGEMM.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/ArrogantGao/CuTropicalGEMM.jl)
 
 CuTropicalGEMM is a fast Tropical matrix multiplication on Nvidia GPU. Supported matrix element types include
