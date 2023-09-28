@@ -75,17 +75,17 @@ BenchmarkTools.Trial: 61 samples with 7 evaluations.
 
 ## Benchmarks
 
-Matrix size `n x n`, NVIDIA A800 80GB PCIe.
-The benchmark and plotting scripts could be found in the benchmarks folder.
+Here is a simple benchmark of the performance using NVIDIA A800 80GB PCIe.
+We compared the performance of `CuTropicalGEMM.jl`, `GemmKernels.jl` and map reducation of `CUDA.jl` on Tropical GEMM with single precision, and used the performance of `Cublas` on normal GEMM as a reference.
 
-![Time cost for FP32/FP64 Tropical opeartors](./benchmark/time.png)
-
-For matrix size large enough ($n > 3000$), the computation power is about $13$ TFlops for FP32 operations and $3$ TFlops for FP64 operations.
+![benchmark FP32](benchmark/benchmark.png)
 
 ## Questions and Contributions
 
 Please open an [issue](https://github.com/TensorBFS/CuTropicalGEMM.jl/issues)
 if you encounter any problems, or have any feature requests.
+
+It is also welcomed for any suggestions about the issues marked as `enhancement`, please let us know if you have any idea.
 
 ## Acknowalgement
 
