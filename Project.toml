@@ -4,18 +4,14 @@ authors = ["Xuanzhao Gao <gaoxuanzhao@gmail.com> and contributors"]
 version = "1.0.0-DEV"
 
 [deps]
-ArtifactUtils = "8b73e784-e7d8-4ea5-973d-377fed4e3bce"
-Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
-BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
-LLVM = "929cbde3-209d-540e-8aea-75f648917ca0"
-LLVMLoopInfo = "8b046642-f1f6-4319-8d3c-209ddc03c586"
-Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 TropicalNumbers = "b3a74e9c-7526-4576-a4eb-79c0d4c32334"
 
 [compat]
+CUDA = "5"
+TropicalNumbers = "0.6.2"
 julia = "1"
 
 [extras]
