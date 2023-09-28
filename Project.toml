@@ -6,6 +6,7 @@ version = "1.0.0-DEV"
 [deps]
 ArtifactUtils = "8b73e784-e7d8-4ea5-973d-377fed4e3bce"
 Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 LLVM = "929cbde3-209d-540e-8aea-75f648917ca0"
 LLVMLoopInfo = "8b046642-f1f6-4319-8d3c-209ddc03c586"
