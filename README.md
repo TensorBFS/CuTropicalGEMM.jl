@@ -76,7 +76,9 @@ BenchmarkTools.Trial: 61 samples with 7 evaluations.
 ## Benchmarks
 
 Here is a simple benchmark of the performance using NVIDIA A800 80GB PCIe.
-We compared the performance of `CuTropicalGEMM.jl`, `GemmKernels.jl` and map reducation of `CUDA.jl` on Tropical GEMM with single precision, and used the performance of `Cublas` on normal GEMM as a reference.
+We compared the performance of `CuTropicalGEMM.jl`, `GemmKernels.jl` and direct `CUDA.jl` map reduce on Tropical GEMM with single precision.
+
+The performance of `Cublas` on normal GEMM is used as a reference.
 
 ![benchmark FP32](benchmark/benchmark.png)
 
@@ -85,7 +87,7 @@ We compared the performance of `CuTropicalGEMM.jl`, `GemmKernels.jl` and map red
 Please open an [issue](https://github.com/TensorBFS/CuTropicalGEMM.jl/issues)
 if you encounter any problems, or have any feature requests.
 
-It is also welcomed for any suggestions about the issues marked as `enhancement`, please let us know if you have any idea.
+It is also welcomed for any suggestions about the issues marked as `enhancement`, please let us know if you have any idea about them.
 
 ## Acknowalgement
 
