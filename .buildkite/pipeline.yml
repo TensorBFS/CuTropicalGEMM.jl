@@ -18,9 +18,7 @@ steps:
         matrix:
           setup:
             julia:
-              - "1.8"
-              - "1.9"
-              - "1.10"
+              - "1"
           adjustments:
             - with:
                 julia: "nightly"
@@ -28,4 +26,4 @@ steps:
 
 
 env:
-  SECRET_CODECOV_TOKEN: "AFBHqF1xnrD/W69t402L6WLKqP1pBRph9mzRKUGd+V7m+uPZRCsZE7bKLmWmWGeGsBn94P8aGPepa4s9rpmJTffrkR9v9yn8S0IdbT4ETOkgFVqyB+OYtcu1zrsK/MujKYDDHg0GQl5DqYWoCqen6Xyaty+oQQUpwE943SzMDy4S0ezBFlC2o4UxHCQF9PIcz0/DQuaGQVWnLknUrNL18GKb7RsieJYWRBSSUZLRtfzAALZsdNRTTGfW2tWiXZtW2lBin3MJ7OBxYju4SiIN2FUvKk+raLwl0fNceh/eEni5hgfGvqbkv1ugULanPILYRhNijRVDsGWMamcZP0T3/w==;U2FsdGVkX1+pFc8npLm1aKY00zEDGz75z8BzjOtEp0Kca4XPmxw8T0sPunb29IO6da0FJmOjZXaYmWzI8jAwDA=="
+  SECRET_CODECOV_TOKEN: "qwWii2T/AXvJxv5ld1n509R/xm+Gc31xl95sutp/cUikuRU6iUMhE1IpXrfypOsO9SrQcrnV9Qenmes8Y0L9UF5+vK3arDvb1sAlxZVT8K0dXVfF07fcQsfTX2KuS88p2TI7ftWn5wuVYUoiHgyD99yUg/5oTrqrD515Sc8mfD35+kYxpCx5kASjiCkiWR/NJleuIXJ7E1ArKnUFbojy5zTjLCyJnt4/FwtcrKi+ZhMfjp9cp0cYcMw0wXlqNhn7U+8BojygEZadkl0iKr9IdORXujsbgXhEXUR3IOtZ8Ob6VV8xPIfU3nqzGSd1VBEYwUiughqEh9O8rMYAoTl8Gg==;U2FsdGVkX1/V3qrIzx2UdBvYWPheH0FbrYrmozFzsajcVC6510FsyxBcY/qSKu4VNonILpKljIzWQxsks6P6Uw=="
