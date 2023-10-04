@@ -1,7 +1,7 @@
 # CuTropicalGEMM
 
 [![Build status](https://badge.buildkite.com/06c24dc7b1a9d7c38897acd21575ffd678ee03de190c0b8d81.svg)](https://buildkite.com/julialang/cutropicalgemm-dot-jl)
-[![Coverage](https://codecov.io/gh/ArrogantGao/CuTropicalGEMM.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/ArrogantGao/CuTropicalGEMM.jl)
+<!-- [![Coverage](https://codecov.io/gh/ArrogantGao/CuTropicalGEMM.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/ArrogantGao/CuTropicalGEMM.jl) -->
 
 <p>
 CuTropicalGEMM is an open source &nbsp;
@@ -86,6 +86,8 @@ The performance of `Cublas` on normal GEMM is used as a reference.
 
 Please open an [issue](https://github.com/TensorBFS/CuTropicalGEMM.jl/issues)
 if you encounter any problems, or have any feature requests.
+
+If you want to have a check of the `C-CUDA` code, please check the repo [TropicalGemm_Cuda](https://github.com/ArrogantGao/TropicalGemm_Cuda).
 
 It is also welcomed for any suggestions about the issues marked as `enhancement`, please let us know if you have any idea about them.
 
