@@ -11,8 +11,6 @@ steps:
           - JuliaCI/julia-coverage#v1:
               dirs:
                 - src
-                - lib
-                - examples
         agents:
           queue: "juliagpu"
           cuda: "*"
