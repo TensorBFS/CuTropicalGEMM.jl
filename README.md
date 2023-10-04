@@ -1,7 +1,7 @@
 # CuTropicalGEMM
 
 [![Build status](https://badge.buildkite.com/06c24dc7b1a9d7c38897acd21575ffd678ee03de190c0b8d81.svg)](https://buildkite.com/julialang/cutropicalgemm-dot-jl)
-<!-- [![Coverage](https://codecov.io/gh/ArrogantGao/CuTropicalGEMM.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/ArrogantGao/CuTropicalGEMM.jl) -->
+[![Coverage](https://codecov.io/gh/TensorBFS/CuTropicalGEMM.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/TensorBFS/CuTropicalGEMM.jl)
 
 <p>
 CuTropicalGEMM is an open source &nbsp;
