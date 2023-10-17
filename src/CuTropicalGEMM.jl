@@ -5,7 +5,7 @@ export matmul!
 
 function __init__()
     @assert CUDA.driver_version() >= v"11.4" "Error: CUDA.driver_version < v11.4"
-    @assert CUDA.driver_version() <= v"12.1" "Error: CUDA.driver_version > v12.1"
+    @assert CUDA.driver_version() <= v"12.2" "Error: CUDA.driver_version > v12.2"
     return nothing
 end
 
