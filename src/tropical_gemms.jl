@@ -35,6 +35,22 @@ for (TA, tA) in [(:CuVecOrMat, 'N'), (:CTranspose, 'T')]
     end
 end
 
+# for (TA, tA) in [(:CuVecOrMat, 'N'), (:CTranspose, 'T')]
+#     for (TB, tB) in [(:CuVecOrMat, 'N'), (:CTranspose, 'T')]
+#         @eval function matmul!(C::CuVecOrMat{T}, A::$TA{T}, B::$TB{T}, α::T, β::T) where {T}
+#             M, N, K = dims_match(A, B, C)
+#             if K == 0 && M * N != 0
+#                 return rmul!(C, β)
+#             elseif M * N == 0
+#                 return C
+#             else
+#                 flat_matmul!(C, parent(A), parent(B), α, β, 128, 128, 32, $tA, $tB)
+#             end
+#             return C
+#         end
+#     end
+# end
+
 const CuTropicalBlasTypes = Union{TropicalAndOr, TropicalMaxPlusF32, TropicalMaxPlusF64, TropicalMaxMulF32, TropicalMaxMulF64, TropicalMaxMulI32, TropicalMaxMulI64}
 
 # overload the LinearAlgebra.mul!
@@ -48,6 +64,7 @@ for TA in [:CuVecOrMat, :CTranspose]
         end
     end
 end
+
 for TT in [:TropicalMaxMul, :TropicalMaxPlus, :TropicalAndOr, :TropicalMinPlus]
     @eval _convert(::Type{T}, x::$TT) where T<:$TT = T(x)
     @eval _convert(::Type{T}, x::Number) where T<:$TT = iszero(x) ? zero(T) : (isone(x) ? one(T) : error("Converting from number type `$(typeof(x))` to `$T` is unsafe!"))

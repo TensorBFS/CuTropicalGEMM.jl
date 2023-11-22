@@ -5,6 +5,8 @@ version = "0.1.1"
 
 [deps]
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+GemmKernels = "312cec97-f96c-4f55-a63d-8e567f91b59b"
+LLVMLoopInfo = "8b046642-f1f6-4319-8d3c-209ddc03c586"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 TropicalGemmC_jll = "4f4992fb-2984-5eba-87b8-475305d0f5fc"
 TropicalNumbers = "b3a74e9c-7526-4576-a4eb-79c0d4c32334"

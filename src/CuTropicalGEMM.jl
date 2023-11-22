@@ -1,6 +1,7 @@
 module CuTropicalGEMM
 
 using CUDA, TropicalNumbers, LinearAlgebra, TropicalGemmC_jll 
+
 export matmul!
 
 function __init__()
@@ -25,5 +26,6 @@ const Symbol_Bool = (:Bool, "Bool")
 const CTranspose{T} = Transpose{T, <:CuVecOrMat{T}}
 
 include("tropical_gemms.jl")
+include("gemm_kernels.jl")
 
 end
