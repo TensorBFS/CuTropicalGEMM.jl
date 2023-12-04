@@ -20,14 +20,14 @@ for (TA, tA) in [(:CuVecOrMat, 'N'), (:CTranspose, 'T')]
             (:TropicalMinPlusF32, :Cfloat, :FLOAT_minplus, :lib_TropicalMinPlus_FP32), (:TropicalMinPlusF64, :Cdouble, :DOUBLE_minplus, :lib_TropicalMinPlus_FP64), 
             (:TropicalMaxMulF32, :Cfloat, :FLOAT_maxmul, :lib_TropicalMaxMul_FP32), (:TropicalMaxMulF64, :Cdouble, :DOUBLE_maxmul, :lib_TropicalMaxMul_FP64), (:TropicalMaxMulI32, :Cint, :INT_maxmul, :lib_TropicalMaxMul_INT32), (:TropicalMaxMulI64, :Clong, :LONG_maxmul, :lib_TropicalMaxMul_INT64)
             ]
-            @eval function matmul!(C::CuVecOrMat{T}, A::$TA{T}, B::$TB{T}, α::T, β::T) where {T<:$TT}
+            @eval function matmul!(C::CuVecOrMat{T}, A::$TA{T}, B::$TB{T}, α::T, β::T, stream::CuStream = stream()) where {T<:$TT}
                 M, N, K = dims_match(A, B, C)
                 if K == 0 && M * N != 0
                     return rmul!(C, β)
                 elseif M * N == 0
                     return C
                 else
-                    @ccall $lib.$funcname(M::Cint, N::Cint, K::Cint, pointer(parent(A))::CuPtr{$CT}, pointer(parent(B))::CuPtr{$CT}, pointer(C)::CuPtr{$CT}, content(α)::$CT, content(β)::$CT, $tA::Cchar, $tB::Cchar)::Cvoid
+                    @ccall $lib.$funcname(M::Cint, N::Cint, K::Cint, pointer(parent(A))::CuPtr{$CT}, pointer(parent(B))::CuPtr{$CT}, pointer(C)::CuPtr{$CT}, content(α)::$CT, content(β)::$CT, $tA::Cchar, $tB::Cchar, stream::CUDA.CUstream)::Cvoid
                 end
                 return C
             end
