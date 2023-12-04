@@ -47,7 +47,7 @@ end
 
     # determine block shape
     # XXX: heuristic should take much more into account (GEMM size, at least)
-    block_shape = (M = 128, N = 128, K = 32)
+    block_shape = (M = BM, N = BN, K = BK)
 
     # determine global memory layouts
     ## check if columns begin at aligned addresses, allowing use of vectorized loads & stores
@@ -100,7 +100,7 @@ end
     return conf, compute_type, GemmKernels.kernel(global_a_layout, global_b_layout)
 end
 
-function flat_matmul!(C::CuArray{T}, A::CuArray{T}, B::CuArray{T}, alpha::T, beta::T, BM::TI, BN::TI, BK::TI, transA::Char, transB::Char) where{T, TI <: Integer}
+function gemm_matmul!(C::CuArray{T}, A::CuArray{T}, B::CuArray{T}, alpha::T, beta::T, BM::TI, BN::TI, BK::TI, transA::Char, transB::Char) where{T, TI <: Integer}
 
     conf, compute_type, kernel = get_Tropical_config(
         typeof(A), size(A), strides(A), transA=='T',
@@ -118,4 +118,29 @@ function flat_matmul!(C::CuArray{T}, A::CuArray{T}, B::CuArray{T}, alpha::T, bet
         kernel)
 
     return C
+end
+
+function test()
+    M = N = K = 4096
+    A = CUDA.rand(Float32, M, K)
+    B = CUDA.rand(Float32, K, N)
+    C = CUDA.rand(Float32, M, N)
+    @info "calculating GEMM for Float32"
+    t1 = @elapsed CUDA.@sync flat_matmul!(C, A, B, 1.0f0, 0.0f0, 128, 128, 32, 'N', 'N')
+    @show t1, M * N * K * 2 / t1 / 1e12
+    
+    TPA = TropicalF32.(A)
+    TPB = TropicalF32.(B)
+    TPC = TropicalF32.(C)
+    @info "calculating GEMM for Tropical MaxPlus Float32"
+    t2 = @elapsed CUDA.@sync flat_matmul!(TPC, TPA, TPB, one(TropicalF32), zero(TropicalF32), 128, 128, 32, 'N', 'N')
+    @show t2, M * N * K * 2 / t2 / 1e12
+
+    TPA = TropicalMaxMulF32.(A)
+    TPB = TropicalMaxMulF32.(B)
+    TPC = TropicalMaxMulF32.(C)
+    @info "calculating GEMM for Tropical MaxMul Float32"
+    t3 = @elapsed CUDA.@sync flat_matmul!(TPC, TPA, TPB, one(TropicalMaxMulF32), zero(TropicalMaxMulF32), 128, 128, 32, 'N', 'N')
+    @show t3, M * N * K * 2 / t3 / 1e12
+    return nothing
 end
