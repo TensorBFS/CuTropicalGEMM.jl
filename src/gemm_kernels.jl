@@ -6,7 +6,7 @@ using LLVMLoopInfo: @loopinfo
 
 
 abstract type TropicalFPUOperation{M, N, K, mb, nb, kb, CT, AT} <: Operator.GeneralFPUOp{M, N, K, mb, nb, kb, CT, AT} end
-function Operator.operator_fma(::Type{TropicalFPUOperation{M, N, K, mb, nb, kb, CT, AT}}, a::CT, b::CT, c::AT) where {M, N, K, mb, nb, kb, CT, AT}
+@inline function Operator.operator_fma(::Type{TropicalFPUOperation{M, N, K, mb, nb, kb, CT, AT}}, a::CT, b::CT, c::AT) where {M, N, K, mb, nb, kb, CT, AT}
     return a * b + c
 end
 
@@ -126,21 +126,21 @@ function test()
     B = CUDA.rand(Float32, K, N)
     C = CUDA.rand(Float32, M, N)
     @info "calculating GEMM for Float32"
-    t1 = @elapsed CUDA.@sync flat_matmul!(C, A, B, 1.0f0, 0.0f0, 128, 128, 32, 'N', 'N')
+    t1 = @elapsed CUDA.@sync gemm_matmul!(C, A, B, 1.0f0, 0.0f0, 128, 128, 32, 'N', 'N')
     @show t1, M * N * K * 2 / t1 / 1e12
     
     TPA = TropicalF32.(A)
     TPB = TropicalF32.(B)
     TPC = TropicalF32.(C)
     @info "calculating GEMM for Tropical MaxPlus Float32"
-    t2 = @elapsed CUDA.@sync flat_matmul!(TPC, TPA, TPB, one(TropicalF32), zero(TropicalF32), 128, 128, 32, 'N', 'N')
+    t2 = @elapsed CUDA.@sync gemm_matmul!(TPC, TPA, TPB, one(TropicalF32), zero(TropicalF32), 128, 128, 32, 'N', 'N')
     @show t2, M * N * K * 2 / t2 / 1e12
 
     TPA = TropicalMaxMulF32.(A)
     TPB = TropicalMaxMulF32.(B)
     TPC = TropicalMaxMulF32.(C)
     @info "calculating GEMM for Tropical MaxMul Float32"
-    t3 = @elapsed CUDA.@sync flat_matmul!(TPC, TPA, TPB, one(TropicalMaxMulF32), zero(TropicalMaxMulF32), 128, 128, 32, 'N', 'N')
+    t3 = @elapsed CUDA.@sync gemm_matmul!(TPC, TPA, TPB, one(TropicalMaxMulF32), zero(TropicalMaxMulF32), 128, 128, 32, 'N', 'N')
     @show t3, M * N * K * 2 / t3 / 1e12
     return nothing
 end

@@ -1,6 +1,6 @@
 module CuTropicalGEMM
 
-using CUDA, TropicalNumbers, LinearAlgebra, TropicalGemmC_jll 
+using CUDA, TropicalNumbers, LinearAlgebra, TropicalGemmC_jll
 
 export matmul!
 
