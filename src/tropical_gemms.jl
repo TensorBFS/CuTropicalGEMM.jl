@@ -35,7 +35,7 @@ for (TA, tA) in [(:CuVecOrMat, 'N'), (:CTranspose, 'T')]
     end
 end
 
-const CuTropicalBlasTypes = Union{TropicalAndOr, TropicalMaxPlusF32, TropicalMaxPlusF64, TropicalMaxMulF32, TropicalMaxMulF64, TropicalMaxMulI32, TropicalMaxMulI64}
+const CuTropicalBlasTypes = Union{TropicalAndOr, TropicalMaxPlusF32, TropicalMaxPlusF64, TropicalMinPlusF32, TropicalMinPlusF64, TropicalMaxMulF32, TropicalMaxMulF64, TropicalMaxMulI32, TropicalMaxMulI64}
 
 # overload the LinearAlgebra.mul!
 for TA in [:CuVecOrMat, :CTranspose]

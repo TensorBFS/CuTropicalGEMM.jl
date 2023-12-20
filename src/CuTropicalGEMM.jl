@@ -1,6 +1,7 @@
 module CuTropicalGEMM
 
-using CUDA, LinearAlgebra, TropicalGemmC_jll 
+using CUDA, LinearAlgebra
+using TropicalGemmC_jll
 using Reexport
 @reexport using TropicalNumbers
 
@@ -11,7 +12,7 @@ function __init__()
         if CUDA.driver_version() < v"11.4"
             @warn "CUDA.driver_version < v11.4! CuTropicalGEMM may not be available."
         elseif CUDA.driver_version() > v"12.3"
-            @warn "CUDA.driver_version > v12.4! CuTropicalGEMM may not be available."
+            @warn "CUDA.driver_version > v12.3! CuTropicalGEMM may not be available."
         end
     elseif CUDA.functional() == false
         @warn "CUDA Driver not found! CuTropicalGEMM will not be available."

@@ -30,7 +30,7 @@
                                 hB = Array(B)
                                 hC = Array(C)
 
-                                C = CuTropicalGEMM.matmul!(C, A, B, α, β)
+                                CUDA.@sync C = CuTropicalGEMM.matmul!(C, A, B, α, β)
                 
                                 hC .= α .* hA * hB .+ β .* hC
 
@@ -55,8 +55,8 @@ end
                             @testset "$testname" begin
                                 if !(size(A) == (1,4) && size(B) == (4,))
                                     res0 = Array(A) * Array(B)
-                                    res1 = A * B
-                                    res2 = LinearAlgebra.mul!(MT.(CUDA.zeros(T, size(res0)...)), A, B)
+                                    CUDA.@sync res1 = A * B
+                                    CUDA.@sync res2 = LinearAlgebra.mul!(MT.(CUDA.zeros(T, size(res0)...)), A, B)
                                     @test Array(res1) ≈ res0
                                     @test Array(res2) ≈ res0
                                 end
@@ -79,8 +79,8 @@ end
                 for B in [transpose(a), a, b]
                     if !(size(A) == (1,4) && size(B) == (4,))
                         res0 = Array(A) * Array(B)
-                        res1 = A * B
-                        res2 = LinearAlgebra.mul!(MT.(CUDA.zeros(T, size(res0)...)), A, B, true, false)
+                        CUDA.@sync res1 = A * B
+                        CUDA.@sync res2 = LinearAlgebra.mul!(MT.(CUDA.zeros(T, size(res0)...)), A, B, true, false)
                         @test Array(res1) ≈ res0
                         @test Array(res2) ≈ res0
                     end
