@@ -13,20 +13,70 @@ end
 
 for (TA, tA) in [(:CuVecOrMat, 'N'), (:CTranspose, 'T')]
     for (TB, tB) in [(:CuVecOrMat, 'N'), (:CTranspose, 'T')]
+        # Float32 and Int32
         for (TT, CT, funcname, lib) in [
-            (:Float32, :Cfloat, :FLOAT_plusmul, :lib_PlusMul_FP32), (:Float64, :Cdouble, :DOUBLE_plusmul, :lib_PlusMul_FP64), (:Int32, :Cint, :INT_plusmul, :lib_PlusMul_INT32), (:Int64, :Clong, :LONG_plusmul, :lib_PlusMul_INT64), 
-            (:TropicalAndOr, :Bool, :BOOL_andor, :lib_TropicalAndOr_Bool), 
-            (:TropicalMaxPlusF32, :Cfloat, :FLOAT_maxplus, :lib_TropicalMaxPlus_FP32), (:TropicalMaxPlusF64, :Cdouble, :DOUBLE_maxplus, :lib_TropicalMaxPlus_FP64), 
-            (:TropicalMinPlusF32, :Cfloat, :FLOAT_minplus, :lib_TropicalMinPlus_FP32), (:TropicalMinPlusF64, :Cdouble, :DOUBLE_minplus, :lib_TropicalMinPlus_FP64), 
-            (:TropicalMaxMulF32, :Cfloat, :FLOAT_maxmul, :lib_TropicalMaxMul_FP32), (:TropicalMaxMulF64, :Cdouble, :DOUBLE_maxmul, :lib_TropicalMaxMul_FP64), (:TropicalMaxMulI32, :Cint, :INT_maxmul, :lib_TropicalMaxMul_INT32), (:TropicalMaxMulI64, :Clong, :LONG_maxmul, :lib_TropicalMaxMul_INT64)
+            (:TropicalMaxPlusF32, :Cfloat, :FLOAT_maxplus, :lib_TropicalMaxPlus_FP32),
+            (:TropicalMinPlusF32, :Cfloat, :FLOAT_minplus, :lib_TropicalMinPlus_FP32), 
+            (:TropicalMaxMulF32, :Cfloat, :FLOAT_maxmul, :lib_TropicalMaxMul_FP32), (:TropicalMaxMulI32, :Cint, :INT_maxmul, :lib_TropicalMaxMul_INT32)
             ]
             @eval function matmul!(C::CuVecOrMat{T}, A::$TA{T}, B::$TB{T}, α::T, β::T, stream::CuStream = stream()) where {T<:$TT}
                 M, N, K = dims_match(A, B, C)
                 if K == 0 && M * N != 0
+                    @debug "K == 0 && M * N != 0"
                     return rmul!(C, β)
                 elseif M * N == 0
+                    @debug "M * N == 0"
+                    return C
+                elseif (log2(M) ≥ 15 && (log2(N) + log2(K)) ≤ 7) || (log2(N) ≥ 15 && (log2(M) + log2(K)) ≤ 7)
+                    if typeof(C) <: AbstractVector
+                        @debug "use mapreduce for vector"  M N K typeof(C) typeof(A) typeof(B)
+                        return invoke(LinearAlgebra.mul!, Tuple{AbstractVector, AbstractVecOrMat, AbstractVector, Number, Number}, C, A, B, α, β)
+                    else
+                        @debug "use mapreduce for matrix"  M N K typeof(C) typeof(A) typeof(B)
+                        return invoke(LinearAlgebra.mul!, Tuple{AbstractMatrix, AbstractVecOrMat, AbstractVecOrMat, Number, Number}, C, A, B, α, β)
+                    end
+                else
+                    @debug "use C based CuTropicalGEMM"  M N K typeof(C) typeof(A) typeof(B)
+                    @ccall $lib.$funcname(M::Cint, N::Cint, K::Cint, pointer(parent(A))::CuPtr{$CT}, pointer(parent(B))::CuPtr{$CT}, pointer(C)::CuPtr{$CT}, content(α)::$CT, content(β)::$CT, $tA::Cchar, $tB::Cchar, stream::CUDA.CUstream)::Cvoid
+                end
+                return C
+            end
+        end 
+
+        for (TT, CT, funcname, lib) in [
+            (:TropicalMaxPlusF64, :Cdouble, :DOUBLE_maxplus, :lib_TropicalMaxPlus_FP64), 
+            (:TropicalMinPlusF64, :Cdouble, :DOUBLE_minplus, :lib_TropicalMinPlus_FP64), 
+            (:TropicalMaxMulF64, :Cdouble, :DOUBLE_maxmul, :lib_TropicalMaxMul_FP64), (:TropicalMaxMulI64, :Clong, :LONG_maxmul, :lib_TropicalMaxMul_INT64)
+            ]
+            @eval function matmul!(C::CuVecOrMat{T}, A::$TA{T}, B::$TB{T}, α::T, β::T, stream::CuStream = stream()) where {T<:$TT}
+                M, N, K = dims_match(A, B, C)
+                if K == 0 && M * N != 0
+                    @debug "K == 0 && M * N != 0"
+                    return rmul!(C, β)
+                elseif M * N == 0
+                    @debug "M * N == 0"
                     return C
                 else
+                    @debug "use C based CuTropicalGEMM"  M N K typeof(C) typeof(A) typeof(B)
+                    @ccall $lib.$funcname(M::Cint, N::Cint, K::Cint, pointer(parent(A))::CuPtr{$CT}, pointer(parent(B))::CuPtr{$CT}, pointer(C)::CuPtr{$CT}, content(α)::$CT, content(β)::$CT, $tA::Cchar, $tB::Cchar, stream::CUDA.CUstream)::Cvoid
+                end
+                return C
+            end
+        end
+
+        for (TT, CT, funcname, lib) in [
+            (:TropicalAndOr, :Bool, :BOOL_andor, :lib_TropicalAndOr_Bool)
+            ]
+            @eval function matmul!(C::CuVecOrMat{T}, A::$TA{T}, B::$TB{T}, α::T, β::T, stream::CuStream = stream()) where {T<:$TT}
+                M, N, K = dims_match(A, B, C)
+                if K == 0 && M * N != 0
+                    @debug "K == 0 && M * N != 0"
+                    return rmul!(C, β)
+                elseif M * N == 0
+                    @debug "M * N == 0"
+                    return C
+                else
+                    @debug "use C based CuTropicalGEMM"  M N K typeof(C) typeof(A) typeof(B)
                     @ccall $lib.$funcname(M::Cint, N::Cint, K::Cint, pointer(parent(A))::CuPtr{$CT}, pointer(parent(B))::CuPtr{$CT}, pointer(C)::CuPtr{$CT}, content(α)::$CT, content(β)::$CT, $tA::Cchar, $tB::Cchar, stream::CUDA.CUstream)::Cvoid
                 end
                 return C

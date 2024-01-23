@@ -1,5 +1,5 @@
 @testset "Testing the gemms" begin
-    for (MT, DT) in [(Real, [Float32, Float64, Int32, Int64]), (TropicalAndOr, [Bool]), (TropicalMaxPlus, [Float32, Float64]), (TropicalMinPlus, [Float32, Float64]), (TropicalMaxMul, [Float32, Float64]), (TropicalMaxMul, [Int32, Int64])]
+    for (MT, DT) in [(TropicalAndOr, [Bool]), (TropicalMaxPlus, [Float32, Float64]), (TropicalMinPlus, [Float32, Float64]), (TropicalMaxMul, [Float32, Float64]), (TropicalMaxMul, [Int32, Int64])]
         for T in DT
             for (M, N, K) in [(0, 0, 0), (2, 0, 0), (2, 2, 0), (5, 6, 7), (66, 67, 33)]
                 if MT == Real
