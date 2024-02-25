@@ -38,39 +38,41 @@ julia> using TropicalNumbers, CUDA, BenchmarkTools, LinearAlgebra
 julia> a = Tropical.(CUDA.randn(4096, 4096));
 
 julia> @btime CUDA.@sync $a * $a;
-  116.272 ms (60 allocations: 2.69 KiB)
+  295.465 ms (43 allocations: 1.75 KiB)
 
 julia> using CuTropicalGEMM
 
 julia> @benchmark CUDA.@sync $a * $a
-BenchmarkTools.Trial: 93 samples with 4 evaluations.
- Range (min … max):   6.653 μs … 158.961 ms  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     13.535 ms               ┊ GC (median):    0.00%
- Time  (mean ± σ):   13.499 ms ±  15.867 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+BenchmarkTools.Trial: 442 samples with 1 evaluation.
+ Range (min … max):  10.320 ms …  12.313 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     11.258 ms               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   11.327 ms ± 160.544 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-                                                             █  
-  ▄▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
-  6.65 μs         Histogram: frequency by time         13.5 ms <
+                                    █    ▆ ▁  ▃                 
+  ▅▁▁▁▄▁▁▁▁▁▁▁▁▁▁▁▄▁▄▁▁▁▁▁▁▁▁▁▄▄▁▁▁▁███▆▁█▆█▅▄█▄▁▁▁▄▁▁▄▁▄▁▄▁▆▆ ▆
+  10.3 ms       Histogram: log(frequency) by time      11.9 ms <
 
- Memory estimate: 256 bytes, allocs estimate: 7.
+ Memory estimate: 272 bytes, allocs estimate: 8.
 ```
 
 You can also use the function `LinearAlgebra.mul!(o, a, b)`, which allows you to manually allocate memory for the result:
 
 ```julia
+julia> using LinearAlgebra: mul!
+
 julia> o = Tropical.(CUDA.zeros(4096, 4096));
 
 julia> @benchmark CUDA.@sync mul!($o, $a, $a)
-BenchmarkTools.Trial: 61 samples with 7 evaluations.
- Range (min … max):   4.584 μs … 13.540 ms  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     13.536 ms              ┊ GC (median):    0.00%
- Time  (mean ± σ):   11.892 ms ±  4.375 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+BenchmarkTools.Trial: 440 samples with 1 evaluation.
+ Range (min … max):  10.301 ms …  12.117 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     11.373 ms               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   11.363 ms ± 129.334 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-                                                            █  
-  ▄▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
-  4.58 μs         Histogram: frequency by time        13.5 ms <
+                                      ▃    █                    
+  ▅▁▁▄▁▁▁▁▁▁▁▁▁▁▁▁▁▄▁▁▁▄▁▁▁▁▁▁▁▁▁▁▁▁▄▁█▄▄▄▄█▇▇▅▄▇▁▁▁▁▄▄▁▁▁▁▅▁▄ ▆
+  10.3 ms       Histogram: log(frequency) by time      11.9 ms <
 
- Memory estimate: 0 bytes, allocs estimate: 0.
+ Memory estimate: 16 bytes, allocs estimate: 1.
 ```
 
 ## Benchmarks
