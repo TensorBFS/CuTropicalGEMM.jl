@@ -82,7 +82,7 @@ We compared the performance of `CuTropicalGEMM.jl`, `GemmKernels.jl` and direct 
 
 The performance of `Cublas` on normal GEMM is used as a reference.
 
-![benchmark FP32](https://github.com/ArrogantGao/CuTropicalGEMM_benchmark/blob/main/plot/benchmark.png)
+![](https://github.com/ArrogantGao/CuTropicalGEMM_benchmark/blob/main/images/matmul_benchmark_square.png)
 
 ## Questions and Contributions
 
