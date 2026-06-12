@@ -12,8 +12,7 @@ steps:
               dirs:
                 - src
         agents:
-          queue: "juliagpu"
-          cuda: "*"
+          queue: "cuda"
         timeout_in_minutes: 120
         matrix:
           setup:
