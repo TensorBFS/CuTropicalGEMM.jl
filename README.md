@@ -2,6 +2,7 @@
 
 [![Build status](https://badge.buildkite.com/06c24dc7b1a9d7c38897acd21575ffd678ee03de190c0b8d81.svg)](https://buildkite.com/julialang/cutropicalgemm-dot-jl)
 [![Coverage](https://codecov.io/gh/TensorBFS/CuTropicalGEMM.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/TensorBFS/CuTropicalGEMM.jl)
+![Agent maintained](https://img.shields.io/badge/maintenance-agent%20maintained-blue)
 
 <p>
 CuTropicalGEMM is an open source &nbsp;
@@ -82,7 +83,7 @@ We compared the performance of `CuTropicalGEMM.jl`, `GemmKernels.jl` and direct 
 
 The performance of `Cublas` on normal GEMM is used as a reference.
 
-![](https://github.com/ArrogantGao/CuTropicalGEMM_benchmark/blob/main/images/matmul_benchmark_square.png)
+![CuTropicalGEMM benchmark results](https://raw.githubusercontent.com/xuanzhaogao/CuTropicalGEMM_benchmark/main/images/matmul_benchmark_square.png)
 
 ## Questions and Contributions
 
